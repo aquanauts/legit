@@ -68,14 +68,14 @@ chown git:git /home/git/.ssh
 # Check if authorized_keys has any keys
 if [ ! -s /home/git/.ssh/authorized_keys ]; then
     echo ""
-    echo "WARNING: No SSH keys found in /home/git/.ssh/authorized_keys"
+    echo "ERROR: No SSH keys found in /home/git/.ssh/authorized_keys"
     echo "You will not be able to connect until you add SSH public keys."
     echo ""
     echo "To add keys, either:"
-    echo "  1. Mount a file: -v /path/to/authorized_keys:/home/git/.ssh/authorized_keys:ro"
+    echo "  1. Mount a file: -v /\$HOME/.ssh/authorized_keys:/home/git/.ssh/authorized_keys:ro"
     echo "  2. Set SSH_AUTHORIZED_KEYS_URL environment variable (e.g., https://github.com/username.keys)"
-    echo "  3. Copy keys into the container: docker cp ~/.ssh/id_rsa.pub container:/home/git/.ssh/authorized_keys"
     echo ""
+    exit 1
 fi
 
 # Display server information

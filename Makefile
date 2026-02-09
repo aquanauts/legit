@@ -85,11 +85,6 @@ run: build ## Build image and run with CLI (runs in foreground)
 	echo ""
 	LEGIT_IMAGE=legit-server:latest ./cli/legit start
 
-.PHONY: stop
-stop: ## Stop the running server
-	echo "Stopping server..."
-	./cli/legit stop || true
-
 # ============================================================================
 # Cleanup
 # ============================================================================

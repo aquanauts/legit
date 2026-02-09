@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-IMAGE="${LEGIT_IMAGE:-ghcr.io/PLACEHOLDER/legit-server:latest}"
+IMAGE="${LEGIT_IMAGE:-ghcr.io/aquanauts/legit-server:latest}"
 SSH_PORT="${LEGIT_SSH_PORT:-2222}"
 AUTH_KEYS="${HOME}/.ssh/authorized_keys"
 

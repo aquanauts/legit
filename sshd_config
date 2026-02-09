@@ -1,0 +1,50 @@
+# SSH server configuration for git-server
+# Security-hardened configuration for public key authentication only
+
+# Network settings
+Port 22
+AddressFamily any
+ListenAddress 0.0.0.0
+ListenAddress ::
+
+# Logging
+SyslogFacility AUTH
+LogLevel INFO
+
+# Authentication
+PubkeyAuthentication yes
+PasswordAuthentication no
+PermitEmptyPasswords no
+ChallengeResponseAuthentication no
+KerberosAuthentication no
+GSSAPIAuthentication no
+
+# Access control
+PermitRootLogin no
+AllowUsers git
+
+# Security features
+StrictModes yes
+MaxAuthTries 3
+MaxSessions 10
+
+# Disable forwarding
+X11Forwarding no
+AllowTcpForwarding no
+AllowAgentForwarding no
+AllowStreamLocalForwarding no
+PermitTunnel no
+
+# Host key locations
+HostKey /etc/ssh/ssh_host_keys/ssh_host_rsa_key
+HostKey /etc/ssh/ssh_host_keys/ssh_host_ecdsa_key
+HostKey /etc/ssh/ssh_host_keys/ssh_host_ed25519_key
+
+# Other settings
+UsePAM yes
+PrintMotd no
+AcceptEnv LANG LC_*
+Subsystem sftp /usr/lib/openssh/sftp-server
+
+# Performance
+UseDNS no

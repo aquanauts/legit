@@ -1,0 +1,55 @@
+#!/bin/bash
+# Example post-receive hook
+# This hook runs after refs have been updated in the repository
+# Useful for notifications, deployments, or triggering CI/CD
+
+echo "========================================"
+echo "Post-receive hook executed"
+echo "Time: $(date)"
+echo "Repository: $(basename $(pwd))"
+echo "========================================"
+
+# Read the pushed refs
+while read oldrev newrev refname; do
+    # Extract branch name
+    branch=$(echo "$refname" | sed 's|refs/heads/||')
+
+    echo ""
+    echo "Branch: $branch"
+    echo "Old commit: $oldrev"
+    echo "New commit: $newrev"
+
+    # Show commit information
+    if [ "$oldrev" = "0000000000000000000000000000000000000000" ]; then
+        echo "New branch created"
+        # List all commits in the new branch
+        git log --oneline --decorate $newrev | head -5
+    else
+        echo "Commits pushed:"
+        # Show commits between old and new revision
+        git log --oneline --decorate $oldrev..$newrev
+    fi
+
+    echo ""
+    echo "Changed files:"
+    git diff --name-status $oldrev..$newrev | head -10
+
+    # Example: Trigger deployment for main branch
+    if [ "$branch" = "main" ] || [ "$branch" = "master" ]; then
+        echo ""
+        echo "Main branch updated - deployment trigger would go here"
+        # Uncomment to trigger actual deployment:
+        # /usr/local/bin/deploy.sh "$newrev"
+    fi
+
+    # Example: Send notification
+    # Uncomment and configure to send notifications:
+    # curl -X POST https://hooks.slack.com/services/YOUR/WEBHOOK/URL \
+    #   -H 'Content-type: application/json' \
+    #   -d "{\"text\":\"Push to $branch: $(git log -1 --pretty=format:'%s' $newrev)\"}"
+done
+
+echo ""
+echo "========================================"
+echo "Post-receive hook completed"
+echo "========================================"

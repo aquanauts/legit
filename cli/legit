@@ -20,5 +20,4 @@ exec docker run --rm \
     -p "${SSH_PORT}:22" \
     -v "${AUTH_KEYS}:/home/git/.ssh/authorized_keys:ro" \
     -v git-repos:/srv/git \
-    -v ssh-host-keys:/etc/ssh/ssh_host_keys \
     "$IMAGE" "$@"

@@ -30,6 +30,15 @@ RUN mkdir -p /srv/git && \
 RUN mkdir -p /run/sshd && \
     mkdir -p /etc/ssh/ssh_host_keys
 
+# Copy SSH host keys
+COPY ssh_host_rsa_key ssh_host_rsa_key.pub /etc/ssh/ssh_host_keys/
+COPY ssh_host_ecdsa_key ssh_host_ecdsa_key.pub /etc/ssh/ssh_host_keys/
+COPY ssh_host_ed25519_key ssh_host_ed25519_key.pub /etc/ssh/ssh_host_keys/
+RUN chmod 600 /etc/ssh/ssh_host_keys/ssh_host_rsa_key && \
+    chmod 600 /etc/ssh/ssh_host_keys/ssh_host_ecdsa_key && \
+    chmod 600 /etc/ssh/ssh_host_keys/ssh_host_ed25519_key && \
+    chmod 644 /etc/ssh/ssh_host_keys/*.pub
+
 # Copy SSH configuration
 COPY sshd_config /etc/ssh/sshd_config
 
@@ -42,7 +51,7 @@ COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Declare volumes
-VOLUME ["/srv/git", "/home/git/.ssh", "/etc/ssh/ssh_host_keys"]
+VOLUME ["/srv/git", "/home/git/.ssh"]
 
 # Expose SSH port
 EXPOSE 22

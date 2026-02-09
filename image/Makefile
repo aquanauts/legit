@@ -134,5 +134,5 @@ clean: $(DOCKER) ## Remove build artifacts and tools
 	$(DOCKER) rmi $(IMAGE_NAME):dev 2>/dev/null || true
 	$(DOCKER) rm -f legit-server-test 2>/dev/null || true
 	rm -rf test_key test_key.pub test-repo authorized_keys 2>/dev/null || true
-	$(DOCKER) volume rm git-repos ssh-host-keys 2>/dev/null || true
+	$(DOCKER) volume rm git-repos 2>/dev/null || true
 	echo "✓ Image cleanup complete"

@@ -63,15 +63,15 @@ pre-commit: hooks ## Run pre-commit checks
 # ============================================================================
 
 .PHONY: build
-build: ## Build the Docker image (shortcut to image/Makefile)
+build: hooks ## Build the Docker image
 	$(MAKE) -C image build
 
 .PHONY: test
-test: ## Run integration tests (shortcut to image/Makefile)
+test: pre-commit ## Run tests
 	$(MAKE) -C image test
 
 .PHONY: publish
-publish: ## Publish image to registry (shortcut to image/Makefile)
+publish: hooks ## Publish image to registry
 	$(MAKE) -C image publish
 
 # ============================================================================

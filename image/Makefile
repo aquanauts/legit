@@ -15,60 +15,6 @@ help: ## Show this help message
 	@grep -hE '^[%0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 # ============================================================================
-# Build Targets
-# ============================================================================
-
-.PHONY: build
-build: $(DOCKER) $(DOCKER_DAEMON) ## Build the Docker image
-	echo "Building $(IMAGE_NAME):$(DOCKER_TAG)..."
-	$(DOCKER) build -t $(IMAGE_NAME):$(DOCKER_TAG) .
-	echo "✓ Build complete: $(IMAGE_NAME):$(DOCKER_TAG)"
-
-.PHONY: dev-build
-dev-build: $(DOCKER) $(DOCKER_DAEMON) ## Build without cache for development
-	echo "Building $(IMAGE_NAME):dev (no cache)..."
-	$(DOCKER) build --no-cache -t $(IMAGE_NAME):dev .
-	echo "✓ Development build complete"
-
-# ============================================================================
-# Test Targets
-# ============================================================================
-
-.PHONY: test
-test: $(DOCKER) $(DOCKER_DAEMON) ## Run integration tests
-	echo "Running integration tests..."
-	./test-setup.sh
-	echo "✓ All tests passed"
-
-.PHONY: validate
-validate: $(DOCKER) ## Validate Dockerfile and shell scripts
-	echo "Validating Dockerfile..."
-	$(DOCKER) build --check . || echo "Note: --check flag not supported, skipping"
-	echo "✓ Dockerfile is valid"
-	echo ""
-	echo "Validating shell scripts..."
-	bash -n docker-entrypoint.sh
-	bash -n init-repo.sh
-	bash -n test-setup.sh
-	echo "✓ Shell scripts are valid"
-
-# ============================================================================
-# Publish Targets
-# ============================================================================
-
-.PHONY: publish
-publish: build ## Tag and push image to registry
-	echo "Tagging image for registry..."
-	$(DOCKER) tag $(IMAGE_NAME):$(DOCKER_TAG) $(REGISTRY)/$(REGISTRY_USER)/$(IMAGE_NAME):$(DOCKER_TAG)
-	echo "Pushing to $(REGISTRY)/$(REGISTRY_USER)/$(IMAGE_NAME):$(DOCKER_TAG)..."
-	$(DOCKER) push $(REGISTRY)/$(REGISTRY_USER)/$(IMAGE_NAME):$(DOCKER_TAG)
-	echo "✓ Published to registry"
-
-.PHONY: publish-latest
-publish-latest: ## Publish as latest tag
-	$(MAKE) publish DOCKER_TAG=latest
-
-# ============================================================================
 # Lima/Colima/Docker installation
 # ============================================================================
 
@@ -127,15 +73,69 @@ docker-daemon-clean: | $(COLIMA) ## Stop and clean Docker daemon
 	rm -rf $(HOME)/.colima
 
 # ============================================================================
+# Build Targets
+# ============================================================================
+
+.PHONY: build
+build: $(DOCKER) $(DOCKER_DAEMON) ## Build the Docker image
+	echo "Building $(IMAGE_NAME):$(DOCKER_TAG)..."
+	$(DOCKER) build -t $(IMAGE_NAME):$(DOCKER_TAG) .
+	echo "✓ Build complete: $(IMAGE_NAME):$(DOCKER_TAG)"
+
+.PHONY: dev-build
+dev-build: $(DOCKER) $(DOCKER_DAEMON) ## Build without cache for development
+	echo "Building $(IMAGE_NAME):dev (no cache)..."
+	$(DOCKER) build --no-cache -t $(IMAGE_NAME):dev .
+	echo "✓ Development build complete"
+
+# ============================================================================
+# Test Targets
+# ============================================================================
+
+.PHONY: test
+test: $(DOCKER) $(DOCKER_DAEMON) ## Run integration tests
+	echo "Running integration tests..."
+	./test-setup.sh
+	echo "✓ All tests passed"
+
+.PHONY: validate
+validate: $(DOCKER) ## Validate Dockerfile and shell scripts
+	echo "Validating Dockerfile..."
+	$(DOCKER) build --check . || echo "Note: --check flag not supported, skipping"
+	echo "✓ Dockerfile is valid"
+	echo ""
+	echo "Validating shell scripts..."
+	bash -n docker-entrypoint.sh
+	bash -n init-repo.sh
+	bash -n test-setup.sh
+	echo "✓ Shell scripts are valid"
+
+# ============================================================================
+# Publish Targets
+# ============================================================================
+
+.PHONY: publish
+publish: build ## Tag and push image to registry
+	echo "Tagging image for registry..."
+	$(DOCKER) tag $(IMAGE_NAME):$(DOCKER_TAG) $(REGISTRY)/$(REGISTRY_USER)/$(IMAGE_NAME):$(DOCKER_TAG)
+	echo "Pushing to $(REGISTRY)/$(REGISTRY_USER)/$(IMAGE_NAME):$(DOCKER_TAG)..."
+	$(DOCKER) push $(REGISTRY)/$(REGISTRY_USER)/$(IMAGE_NAME):$(DOCKER_TAG)
+	echo "✓ Published to registry"
+
+.PHONY: publish-latest
+publish-latest: ## Publish as latest tag
+	$(MAKE) publish DOCKER_TAG=latest
+
+# ============================================================================
 # Cleanup
 # ============================================================================
 
 .PHONY: clean
-clean: ## Remove build artifacts and tools
+clean: $(DOCKER) ## Remove build artifacts and tools
 	echo "Cleaning up image build artifacts..."
-	docker rmi $(IMAGE_NAME):$(DOCKER_TAG) 2>/dev/null || true
-	docker rmi $(IMAGE_NAME):dev 2>/dev/null || true
-	docker rm -f legit-server-test 2>/dev/null || true
+	$(DOCKER) rmi $(IMAGE_NAME):$(DOCKER_TAG) 2>/dev/null || true
+	$(DOCKER) rmi $(IMAGE_NAME):dev 2>/dev/null || true
+	$(DOCKER) rm -f legit-server-test 2>/dev/null || true
 	rm -rf test_key test_key.pub test-repo authorized_keys 2>/dev/null || true
-	docker volume rm git-repos ssh-host-keys 2>/dev/null || true
+	$(DOCKER) volume rm git-repos ssh-host-keys 2>/dev/null || true
 	echo "✓ Image cleanup complete"

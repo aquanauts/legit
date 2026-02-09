@@ -62,26 +62,6 @@ git commit -m "Initial commit"
 git push origin main
 ```
 
-## Using Docker Compose
-
-### 1. Create authorized_keys file
-
-```bash
-cp ~/.ssh/id_rsa.pub authorized_keys
-```
-
-### 2. Start the service
-
-```bash
-docker-compose up -d
-```
-
-### 3. Check logs
-
-```bash
-docker-compose logs -f git-server
-```
-
 ## Configuration
 
 ### Environment Variables
@@ -207,15 +187,7 @@ Common server-side hooks:
 
 ### Adding hooks
 
-#### Method 1: Mount hooks directory
-
-```yaml
-# docker-compose.yml
-volumes:
-  - ./hooks:/srv/git/myproject.git/hooks:ro
-```
-
-#### Method 2: Copy into container
+#### Method 1: Copy into container
 
 ```bash
 # Create hook script locally
@@ -236,7 +208,7 @@ docker exec git-server chmod +x /srv/git/myproject.git/hooks/post-receive
 docker exec git-server chown git:git /srv/git/myproject.git/hooks/post-receive
 ```
 
-#### Method 3: Create inside container
+#### Method 2: Create inside container
 
 ```bash
 docker exec git-server bash -c 'cat > /srv/git/myproject.git/hooks/post-receive << "EOF"
@@ -461,32 +433,26 @@ jobs:
 
 ### Multiple containers
 
-```yaml
-# docker-compose.yml
-version: '3.8'
-services:
-  git-server-dev:
-    image: git-server:latest
-    ports:
-      - "2222:22"
-    volumes:
-      - git-repos-dev:/srv/git
+Run multiple instances for different environments:
 
-  git-server-prod:
-    image: git-server:latest
-    ports:
-      - "2223:22"
-    volumes:
-      - git-repos-prod:/srv/git
-```
+```bash
+# Development server
+docker run -d \
+  --name git-server-dev \
+  -p 2222:22 \
+  -v git-repos-dev:/srv/git \
+  -v ssh-host-keys-dev:/etc/ssh/ssh_host_keys \
+  -v $(pwd)/authorized_keys:/home/git/.ssh/authorized_keys:ro \
+  git-server:latest
 
-### Custom SSH port inside container
-
-```yaml
-services:
-  git-server:
-    environment:
-      - SSH_PORT=2222  # Not implemented in base image, would require customization
+# Production server
+docker run -d \
+  --name git-server-prod \
+  -p 2223:22 \
+  -v git-repos-prod:/srv/git \
+  -v ssh-host-keys-prod:/etc/ssh/ssh_host_keys \
+  -v $(pwd)/authorized_keys:/home/git/.ssh/authorized_keys:ro \
+  git-server:latest
 ```
 
 ### Health monitoring

@@ -29,10 +29,6 @@ curl https://github.com/YOUR_USERNAME.keys > authorized_keys
 ## Step 2: Start the Server
 
 ```bash
-# Using Docker Compose (recommended)
-docker-compose up -d
-
-# Or using Docker directly
 docker run -d \
   --name git-server \
   -p 2222:22 \
@@ -110,14 +106,14 @@ git clone ssh://git@localhost:2222/srv/git/another-project.git
 Edit `authorized_keys` and restart:
 ```bash
 curl https://github.com/teammate.keys >> authorized_keys
-docker-compose restart
+docker restart git-server
 ```
 
 ## Common Commands
 
 ```bash
 # View logs
-docker-compose logs -f
+docker logs -f git-server
 
 # List repositories
 docker exec git-server ls -la /srv/git
@@ -126,10 +122,13 @@ docker exec git-server ls -la /srv/git
 docker cp git-server:/srv/git ./backup
 
 # Stop server
-docker-compose down
+docker stop git-server
 
-# Stop and remove volumes
-docker-compose down -v
+# Stop and remove container
+docker stop git-server && docker rm git-server
+
+# Remove volumes
+docker volume rm git-repos ssh-host-keys
 ```
 
 ## Troubleshooting
@@ -164,8 +163,15 @@ To use on a remote server:
 
 1. **On the server:**
    ```bash
-   # Use port 22 or another port
-   docker-compose up -d
+   # Build and run the container
+   docker build -t git-server:latest .
+   docker run -d \
+     --name git-server \
+     -p 2222:22 \
+     -v $(pwd)/authorized_keys:/home/git/.ssh/authorized_keys:ro \
+     -v git-repos:/srv/git \
+     -v ssh-host-keys:/etc/ssh/ssh_host_keys \
+     git-server:latest
    ```
 
 2. **On your local machine:**

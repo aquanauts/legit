@@ -48,17 +48,7 @@ docker exec git-server chmod +x /srv/git/myrepo.git/hooks/post-receive
 docker exec git-server chown git:git /srv/git/myrepo.git/hooks/post-receive
 ```
 
-### Option 2: Mount hooks directory
-
-```yaml
-# docker-compose.yml
-services:
-  git-server:
-    volumes:
-      - ./examples/hooks/post-receive:/srv/git/myrepo.git/hooks/post-receive:ro
-```
-
-### Option 3: Create inside container
+### Option 2: Create inside container
 
 ```bash
 docker exec git-server bash -c 'cat > /srv/git/myrepo.git/hooks/post-receive << "EOF"

@@ -6,12 +6,11 @@ Successfully implemented a complete Ubuntu SSH+Git server Docker image with comp
 
 ## What Was Built
 
-### Core Components (320 lines total)
+### Core Components (251 lines total)
 - **Dockerfile** (51 lines): Ubuntu 24.04 base with OpenSSH and Git
 - **docker-entrypoint.sh** (106 lines): Dynamic initialization with UID/GID adjustment
 - **sshd_config** (50 lines): Security-hardened SSH configuration
 - **init-repo.sh** (44 lines): Repository creation helper script
-- **docker-compose.yml** (69 lines): Production deployment template
 
 ### Documentation (33 KB)
 - **README.md** (13 KB): Complete feature documentation
@@ -71,31 +70,29 @@ Successfully implemented a complete Ubuntu SSH+Git server Docker image with comp
 3. Makefile for common operations
 4. Comprehensive troubleshooting guide
 5. Example git hooks with documentation
-6. Docker Compose example
-7. Contributing guidelines
-8. Multiple usage examples
+6. Contributing guidelines
+7. Multiple usage examples
 
-## File Count: 16
+## File Count: 15
 
 1. Dockerfile
-2. docker-compose.yml
-3. docker-entrypoint.sh
-4. sshd_config
-5. init-repo.sh
-6. test-setup.sh
-7. Makefile
-8. README.md
-9. QUICKSTART.md
-10. TESTING.md
-11. CONTRIBUTING.md
-12. LICENSE
-13. .dockerignore
-14. .gitignore
-15. authorized_keys.example
-16. examples/README.md
-17. examples/hooks/post-receive
-18. examples/hooks/pre-receive
-19. examples/hooks/update
+2. docker-entrypoint.sh
+3. sshd_config
+4. init-repo.sh
+5. test-setup.sh
+6. Makefile
+7. README.md
+8. QUICKSTART.md
+9. TESTING.md
+10. CONTRIBUTING.md
+11. LICENSE
+12. .dockerignore
+13. .gitignore
+14. authorized_keys.example
+15. examples/README.md
+16. examples/hooks/post-receive
+17. examples/hooks/pre-receive
+18. examples/hooks/update
 
 ## Testing Coverage
 
@@ -146,7 +143,8 @@ make quickstart
 cp ~/.ssh/id_rsa.pub authorized_keys
 
 # 2. Build and start
-docker-compose up -d
+make build
+make start
 
 # 3. Create repository
 make create-repo NAME=myproject
@@ -213,7 +211,7 @@ make test
 ## Timeline
 
 - Planning: Comprehensive implementation plan created
-- Core Implementation: 5 essential files (320 lines)
+- Core Implementation: 4 essential files (251 lines)
 - Documentation: 5 guides (33 KB)
 - Examples: 3 git hooks with documentation
 - Testing: Automated suite (10 checks)

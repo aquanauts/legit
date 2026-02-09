@@ -9,7 +9,6 @@ README.md
 docs/
 
 # Docker files
-docker-compose.yml
 .dockerignore
 
 # Test files

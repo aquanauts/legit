@@ -5,7 +5,7 @@ help:
 	@echo "Git Server Docker - Available Commands"
 	@echo ""
 	@echo "  make build        - Build the Docker image"
-	@echo "  make start        - Start the git server (docker-compose)"
+	@echo "  make start        - Start the git server"
 	@echo "  make stop         - Stop the git server"
 	@echo "  make restart      - Restart the git server"
 	@echo "  make logs         - Show container logs"
@@ -31,7 +31,14 @@ start:
 		echo "Creating example file - add your SSH keys before connecting"; \
 		cp authorized_keys.example authorized_keys; \
 	fi
-	docker-compose up -d
+	docker run -d \
+		--name git-server \
+		-p 2222:22 \
+		-v $$(pwd)/authorized_keys:/home/git/.ssh/authorized_keys:ro \
+		-v git-repos:/srv/git \
+		-v ssh-host-keys:/etc/ssh/ssh_host_keys \
+		-e REPOSITORIES_HOME_LINK=true \
+		git-server:latest
 	@echo "✓ Git server started on port 2222"
 	@echo ""
 	@echo "To create a repository: make create-repo NAME=myproject"
@@ -40,7 +47,8 @@ start:
 # Stop the server
 stop:
 	@echo "Stopping git server..."
-	docker-compose down
+	@docker stop git-server 2>/dev/null || true
+	@docker rm git-server 2>/dev/null || true
 	@echo "✓ Git server stopped"
 
 # Restart the server
@@ -48,7 +56,7 @@ restart: stop start
 
 # Show logs
 logs:
-	docker-compose logs -f git-server
+	docker logs -f git-server
 
 # Run automated tests
 test:
@@ -63,7 +71,7 @@ create-repo:
 		exit 1; \
 	fi
 	@echo "Creating repository: $(NAME)"
-	@docker-compose exec git-server /usr/local/bin/init-repo.sh $(NAME)
+	@docker exec git-server /usr/local/bin/init-repo.sh $(NAME)
 	@echo ""
 	@echo "Clone with:"
 	@echo "  git clone ssh://git@localhost:2222/srv/git/$(NAME).git"
@@ -71,21 +79,17 @@ create-repo:
 # List all repositories
 list-repos:
 	@echo "Repositories:"
-	@docker-compose exec git-server ls -lh /srv/git
+	@docker exec git-server ls -lh /srv/git
 
 # Open shell in container
 shell:
-	@docker-compose exec git-server /bin/bash
+	@docker exec -it git-server /bin/bash
 
 # Validate configuration files
 validate:
 	@echo "Validating Dockerfile..."
 	@docker build --check .
 	@echo "✓ Dockerfile is valid"
-	@echo ""
-	@echo "Validating docker-compose.yml..."
-	@docker-compose config > /dev/null
-	@echo "✓ docker-compose.yml is valid"
 	@echo ""
 	@echo "Validating shell scripts..."
 	@bash -n docker-entrypoint.sh
@@ -96,9 +100,11 @@ validate:
 # Clean up everything
 clean:
 	@echo "Cleaning up..."
-	@docker-compose down -v 2>/dev/null || true
+	@docker stop git-server 2>/dev/null || true
+	@docker rm git-server 2>/dev/null || true
 	@docker rm -f git-server-test 2>/dev/null || true
 	@rm -rf test_key test_key.pub test-repo authorized_keys 2>/dev/null || true
+	@docker volume rm git-repos ssh-host-keys 2>/dev/null || true
 	@docker volume rm $$(docker volume ls -q | grep git) 2>/dev/null || true
 	@echo "✓ Cleanup complete"
 

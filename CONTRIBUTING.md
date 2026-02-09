@@ -118,7 +118,6 @@ Thank you for your interest in contributing! This document provides guidelines a
 ```
 .
 ├── Dockerfile              # Main Docker image definition
-├── docker-compose.yml      # Example deployment configuration
 ├── docker-entrypoint.sh    # Container initialization script
 ├── init-repo.sh           # Repository creation helper
 ├── sshd_config            # SSH server configuration
@@ -166,7 +165,7 @@ docker stop test-server && docker rm test-server
 **Add a new environment variable:**
 1. Update `docker-entrypoint.sh` to handle the variable
 2. Document it in `README.md` (Configuration section)
-3. Add example to `docker-compose.yml`
+3. Add example usage to `README.md`
 4. Test it works as expected
 
 **Modify SSH configuration:**

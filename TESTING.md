@@ -277,32 +277,7 @@ docker stop git-server-link-test
 docker rm git-server-link-test
 ```
 
-### 10. Docker Compose Test
-
-```bash
-# Start with compose
-docker-compose up -d
-
-# Check service is running
-docker-compose ps
-
-# Check logs
-docker-compose logs git-server
-
-# Create repository
-docker-compose exec git-server /usr/local/bin/init-repo.sh compose-test
-
-# Test clone
-export GIT_SSH_COMMAND="ssh -i $(pwd)/test_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
-git clone ssh://git@localhost:2222/srv/git/compose-test.git
-
-# Stop
-docker-compose down
-```
-
-**Expected:** All operations succeed.
-
-### 11. Multi-User Test
+### 10. Multi-User Test
 
 ```bash
 # Create multiple SSH keys
@@ -323,7 +298,7 @@ ssh -i user2_key -p 2222 -o StrictHostKeyChecking=no git@localhost
 
 **Expected:** Both users can connect successfully.
 
-### 12. Performance Test
+### 11. Performance Test
 
 ```bash
 # Create multiple repositories
@@ -437,7 +412,6 @@ If tests fail, check:
 - [ ] Environment variables (keys URL)
 - [ ] Environment variables (home link)
 - [ ] Volume mounts
-- [ ] Docker Compose
 - [ ] Multi-user access
 - [ ] Concurrent operations
 - [ ] Host key persistence

@@ -6,9 +6,8 @@ Project Root: /Users/brady/src/legit/
 File Structure:
 ---------------
 
-Core Docker Files (5 files, 320 lines)
+Core Docker Files (4 files, 251 lines)
 ├── Dockerfile                          [51 lines]  Multi-stage Ubuntu 24.04 image
-├── docker-compose.yml                  [69 lines]  Production deployment config
 ├── docker-entrypoint.sh               [106 lines]  Runtime initialization script
 ├── sshd_config                         [50 lines]  Secure SSH server config
 └── init-repo.sh                        [44 lines]  Repository creation helper
@@ -41,11 +40,11 @@ Meta Documentation (2 files)
 ├── IMPLEMENTATION_SUMMARY.md           [~6 KB]     This implementation summary
 └── PROJECT_STRUCTURE.txt               [This file] Project tree view
 
-Total: 21 files
+Total: 20 files
 
 Quick Statistics:
 -----------------
-- Core code:           320 lines
+- Core code:           251 lines
 - Shell scripts:       ~250 lines
 - Documentation:       ~33 KB
 - Example hooks:       3 files
@@ -68,7 +67,7 @@ Key Features:
 Quick Commands:
 ---------------
 Build:          docker build -t git-server:latest .
-Start:          docker-compose up -d
+Start:          make start
 Test:           ./test-setup.sh
 Create repo:    docker exec git-server /usr/local/bin/init-repo.sh <name>
 List repos:     docker exec git-server ls -la /srv/git

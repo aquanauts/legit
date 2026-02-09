@@ -17,3 +17,10 @@ authorized_keys
 
 # Docker volumes (if using bind mounts)
 volumes/
+
+# Tools
+.tools/
+
+# CLI specific
+cli/config
+cli/.legit/

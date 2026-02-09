@@ -1,0 +1,433 @@
+#!/bin/bash
+#
+# legit - Simple CLI for running a self-hosted Git server with Docker
+#
+# Usage: legit <command> [args]
+# See: legit help
+
+set -euo pipefail
+
+# ============================================================================
+# Configuration
+# ============================================================================
+
+# Default configuration
+DEFAULT_IMAGE="ghcr.io/PLACEHOLDER/legit-server:latest"
+DEFAULT_CONTAINER="legit-server"
+DEFAULT_SSH_PORT="2222"
+DEFAULT_CONFIG_DIR="${HOME}/.config/legit"
+
+# Load configuration from file if it exists
+CONFIG_DIR="${LEGIT_CONFIG_DIR:-$DEFAULT_CONFIG_DIR}"
+CONFIG_FILE="${CONFIG_DIR}/config"
+
+# Set defaults
+IMAGE="${LEGIT_IMAGE:-$DEFAULT_IMAGE}"
+CONTAINER_NAME="${LEGIT_CONTAINER:-$DEFAULT_CONTAINER}"
+SSH_PORT="${LEGIT_SSH_PORT:-$DEFAULT_SSH_PORT}"
+GIT_USER_UID="${LEGIT_GIT_USER_UID:-}"
+GIT_USER_GID="${LEGIT_GIT_USER_GID:-}"
+REPOSITORIES_HOME_LINK="${LEGIT_REPOSITORIES_HOME_LINK:-true}"
+
+# Load config file if exists
+if [[ -f "$CONFIG_FILE" ]]; then
+    # shellcheck disable=SC1090
+    source "$CONFIG_FILE"
+fi
+
+# ============================================================================
+# Helper Functions
+# ============================================================================
+
+log() {
+    echo "$@"
+}
+
+log_success() {
+    echo "✓ $*"
+}
+
+log_error() {
+    echo "✗ Error: $*" >&2
+}
+
+log_warn() {
+    echo "⚠ Warning: $*"
+}
+
+die() {
+    log_error "$@"
+    exit 1
+}
+
+check_docker() {
+    if ! command -v docker &> /dev/null; then
+        die "Docker is not installed. Please install Docker and try again."
+    fi
+
+    if ! docker info &> /dev/null; then
+        die "Docker daemon is not running. Please start Docker and try again."
+    fi
+}
+
+container_exists() {
+    docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"
+}
+
+container_running() {
+    docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"
+}
+
+ensure_config_dir() {
+    if [[ ! -d "$CONFIG_DIR" ]]; then
+        mkdir -p "$CONFIG_DIR"
+        log_success "Created config directory: $CONFIG_DIR"
+    fi
+}
+
+find_ssh_key() {
+    local auth_keys="${CONFIG_DIR}/authorized_keys"
+
+    # Check if authorized_keys already exists
+    if [[ -f "$auth_keys" ]]; then
+        return 0
+    fi
+
+    # Look for default SSH public key
+    if [[ -f "${HOME}/.ssh/id_rsa.pub" ]]; then
+        log "Found SSH key: ~/.ssh/id_rsa.pub"
+        cp "${HOME}/.ssh/id_rsa.pub" "$auth_keys"
+        log_success "Copied SSH key to $auth_keys"
+        return 0
+    fi
+
+    if [[ -f "${HOME}/.ssh/id_ed25519.pub" ]]; then
+        log "Found SSH key: ~/.ssh/id_ed25519.pub"
+        cp "${HOME}/.ssh/id_ed25519.pub" "$auth_keys"
+        log_success "Copied SSH key to $auth_keys"
+        return 0
+    fi
+
+    # No key found, prompt user
+    log_warn "No SSH key found!"
+    log ""
+    log "Please add your SSH public key to: $auth_keys"
+    log ""
+    log "Options:"
+    log "  1. Copy existing key:"
+    log "     cp ~/.ssh/id_rsa.pub $auth_keys"
+    log ""
+    log "  2. Generate new key:"
+    log "     ssh-keygen -t ed25519 -f ~/.ssh/legit_key -N \"\""
+    log "     cp ~/.ssh/legit_key.pub $auth_keys"
+    log ""
+    log "  3. Fetch from GitHub:"
+    log "     curl https://github.com/USERNAME.keys > $auth_keys"
+    log ""
+    return 1
+}
+
+# ============================================================================
+# Command Functions
+# ============================================================================
+
+cmd_start() {
+    check_docker
+    ensure_config_dir
+
+    if container_running; then
+        log_warn "Container '$CONTAINER_NAME' is already running"
+        return 0
+    fi
+
+    if container_exists; then
+        log "Starting existing container '$CONTAINER_NAME'..."
+        docker start "$CONTAINER_NAME"
+        log_success "Git server started on port $SSH_PORT"
+        return 0
+    fi
+
+    # Find or setup SSH keys
+    if ! find_ssh_key; then
+        die "Cannot start server without SSH keys. Please set up authorized_keys and try again."
+    fi
+
+    local auth_keys="${CONFIG_DIR}/authorized_keys"
+
+    log "Starting new Git server container..."
+    log "  Image: $IMAGE"
+    log "  Container: $CONTAINER_NAME"
+    log "  SSH Port: $SSH_PORT"
+
+    # Pull image if not present
+    if ! docker image inspect "$IMAGE" &> /dev/null; then
+        log "Pulling image $IMAGE..."
+        docker pull "$IMAGE"
+    fi
+
+    # Build docker run command
+    local docker_args=(
+        run -d
+        --name "$CONTAINER_NAME"
+        -p "${SSH_PORT}:22"
+        -v "${auth_keys}:/home/git/.ssh/authorized_keys:ro"
+        -v git-repos:/srv/git
+        -v ssh-host-keys:/etc/ssh/ssh_host_keys
+    )
+
+    # Add optional environment variables
+    [[ -n "$GIT_USER_UID" ]] && docker_args+=(-e "GIT_USER_UID=$GIT_USER_UID")
+    [[ -n "$GIT_USER_GID" ]] && docker_args+=(-e "GIT_USER_GID=$GIT_USER_GID")
+    [[ -n "$REPOSITORIES_HOME_LINK" ]] && docker_args+=(-e "REPOSITORIES_HOME_LINK=$REPOSITORIES_HOME_LINK")
+
+    docker_args+=("$IMAGE")
+
+    # Run container
+    docker "${docker_args[@]}"
+
+    log_success "Git server started on port $SSH_PORT"
+    log ""
+    log "Next steps:"
+    log "  Create a repository: legit create-repo myproject"
+    log "  View logs: legit logs"
+    log "  Clone: git clone ssh://git@localhost:${SSH_PORT}/srv/git/myproject.git"
+}
+
+cmd_stop() {
+    check_docker
+
+    if ! container_exists; then
+        log_warn "Container '$CONTAINER_NAME' does not exist"
+        return 0
+    fi
+
+    log "Stopping Git server..."
+    docker stop "$CONTAINER_NAME" &> /dev/null || true
+    docker rm "$CONTAINER_NAME" &> /dev/null || true
+    log_success "Git server stopped"
+}
+
+cmd_restart() {
+    cmd_stop
+    cmd_start
+}
+
+cmd_status() {
+    check_docker
+
+    if container_running; then
+        log_success "Git server is running"
+        log ""
+        docker ps --filter "name=${CONTAINER_NAME}" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+    elif container_exists; then
+        log_warn "Git server container exists but is not running"
+        log "Use 'legit start' to start it"
+    else
+        log "Git server is not running"
+        log "Use 'legit start' to start it"
+    fi
+}
+
+cmd_logs() {
+    check_docker
+
+    if ! container_exists; then
+        die "Container '$CONTAINER_NAME' does not exist. Run 'legit start' first."
+    fi
+
+    local follow=""
+    if [[ "${1:-}" == "-f" ]] || [[ "${1:-}" == "--follow" ]]; then
+        follow="-f"
+    fi
+
+    docker logs $follow "$CONTAINER_NAME"
+}
+
+cmd_create_repo() {
+    local repo_name="${1:-}"
+
+    if [[ -z "$repo_name" ]]; then
+        die "Repository name required. Usage: legit create-repo <name>"
+    fi
+
+    check_docker
+
+    if ! container_running; then
+        die "Git server is not running. Run 'legit start' first."
+    fi
+
+    log "Creating repository: $repo_name"
+    docker exec "$CONTAINER_NAME" /usr/local/bin/init-repo.sh "$repo_name"
+    log_success "Repository created: $repo_name.git"
+    log ""
+    log "Clone with:"
+    log "  git clone ssh://git@localhost:${SSH_PORT}/srv/git/${repo_name}.git"
+}
+
+cmd_list_repos() {
+    check_docker
+
+    if ! container_running; then
+        die "Git server is not running. Run 'legit start' first."
+    fi
+
+    log "Repositories:"
+    docker exec "$CONTAINER_NAME" ls -lh /srv/git
+}
+
+cmd_shell() {
+    check_docker
+
+    if ! container_running; then
+        die "Git server is not running. Run 'legit start' first."
+    fi
+
+    docker exec -it "$CONTAINER_NAME" /bin/bash
+}
+
+cmd_pull() {
+    local version="${1:-latest}"
+
+    check_docker
+
+    # Parse image to update version
+    local base_image="${IMAGE%:*}"
+    local new_image="${base_image}:${version}"
+
+    log "Pulling image: $new_image"
+    docker pull "$new_image"
+    log_success "Image pulled successfully"
+
+    if container_running; then
+        log ""
+        log "To use the new image, restart the server:"
+        log "  legit restart"
+    fi
+}
+
+cmd_version() {
+    local cli_version="1.0.0"
+
+    log "legit CLI version: $cli_version"
+
+    if docker image inspect "$IMAGE" &> /dev/null; then
+        log "Image: $IMAGE"
+        local created=$(docker image inspect "$IMAGE" --format '{{.Created}}' | cut -d'T' -f1)
+        log "Image created: $created"
+    else
+        log "Image: $IMAGE (not pulled yet)"
+    fi
+}
+
+cmd_help() {
+    cat << 'EOF'
+legit - Simple CLI for running a self-hosted Git server
+
+USAGE:
+    legit <command> [args]
+
+COMMANDS:
+    start                Start the Git server
+    stop                 Stop the Git server
+    restart              Restart the Git server
+    status               Show server status
+    logs [-f]            View server logs (-f to follow)
+    create-repo <name>   Create a new Git repository
+    list-repos           List all repositories
+    shell                Open a shell in the server container
+    pull [version]       Pull a new image version (default: latest)
+    version              Show CLI and image versions
+    help                 Show this help message
+
+EXAMPLES:
+    # Start the server
+    legit start
+
+    # Create a new repository
+    legit create-repo myproject
+
+    # Clone the repository
+    git clone ssh://git@localhost:2222/srv/git/myproject.git
+
+    # View logs
+    legit logs -f
+
+    # Update to latest image
+    legit pull latest
+    legit restart
+
+CONFIGURATION:
+    Config file: ~/.config/legit/config
+
+    Available settings:
+        IMAGE=ghcr.io/user/legit-server:latest
+        CONTAINER_NAME=legit-server
+        SSH_PORT=2222
+        GIT_USER_UID=1000
+        GIT_USER_GID=1000
+        REPOSITORIES_HOME_LINK=true
+
+DOCUMENTATION:
+    https://github.com/USERNAME/legit
+
+EOF
+}
+
+# ============================================================================
+# Main
+# ============================================================================
+
+main() {
+    local cmd="${1:-}"
+
+    if [[ -z "$cmd" ]]; then
+        cmd_help
+        exit 0
+    fi
+
+    shift || true
+
+    case "$cmd" in
+        start)
+            cmd_start "$@"
+            ;;
+        stop)
+            cmd_stop "$@"
+            ;;
+        restart)
+            cmd_restart "$@"
+            ;;
+        status)
+            cmd_status "$@"
+            ;;
+        logs)
+            cmd_logs "$@"
+            ;;
+        create-repo)
+            cmd_create_repo "$@"
+            ;;
+        list-repos)
+            cmd_list_repos "$@"
+            ;;
+        shell)
+            cmd_shell "$@"
+            ;;
+        pull)
+            cmd_pull "$@"
+            ;;
+        version)
+            cmd_version "$@"
+            ;;
+        help|--help|-h)
+            cmd_help
+            ;;
+        *)
+            log_error "Unknown command: $cmd"
+            log ""
+            cmd_help
+            exit 1
+            ;;
+    esac
+}
+
+main "$@"

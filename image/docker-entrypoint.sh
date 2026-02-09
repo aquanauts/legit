@@ -73,8 +73,11 @@ fi
 echo "Setting SSH directory permissions..."
 chmod 700 /home/git/.ssh
 if [ -f /home/git/.ssh/authorized_keys ]; then
-    chmod 600 /home/git/.ssh/authorized_keys
-    chown git:git /home/git/.ssh/authorized_keys
+    # Only try to set permissions if the file is writable (not mounted read-only)
+    if [ -w /home/git/.ssh/authorized_keys ]; then
+        chmod 600 /home/git/.ssh/authorized_keys
+        chown git:git /home/git/.ssh/authorized_keys
+    fi
 fi
 chown git:git /home/git/.ssh
 

@@ -9,7 +9,7 @@ oldrev="$2"
 newrev="$3"
 
 # Extract branch name
-branch=$(echo "$refname" | sed 's|refs/heads/||')
+branch="${refname#refs/heads/}"
 
 echo "Update hook: checking $branch"
 
@@ -31,7 +31,7 @@ fi
 if [ "$branch" = "main" ] || [ "$branch" = "master" ]; then
     if [ "$oldrev" != "0000000000000000000000000000000000000000" ]; then
         # Check if this is a fast-forward update
-        if ! git merge-base --is-ancestor $oldrev $newrev; then
+        if ! git merge-base --is-ancestor "$oldrev" "$newrev"; then
             echo "ERROR: Non-fast-forward push to $branch is not allowed"
             echo "Please pull the latest changes and rebase your commits"
             exit 1

@@ -6,13 +6,13 @@
 echo "========================================"
 echo "Post-receive hook executed"
 echo "Time: $(date)"
-echo "Repository: $(basename $(pwd))"
+echo "Repository: $(basename "$(pwd)")"
 echo "========================================"
 
 # Read the pushed refs
-while read oldrev newrev refname; do
+while read -r oldrev newrev refname; do
     # Extract branch name
-    branch=$(echo "$refname" | sed 's|refs/heads/||')
+    branch="${refname#refs/heads/}"
 
     echo ""
     echo "Branch: $branch"
@@ -23,16 +23,16 @@ while read oldrev newrev refname; do
     if [ "$oldrev" = "0000000000000000000000000000000000000000" ]; then
         echo "New branch created"
         # List all commits in the new branch
-        git log --oneline --decorate $newrev | head -5
+        git log --oneline --decorate "$newrev" | head -5
     else
         echo "Commits pushed:"
         # Show commits between old and new revision
-        git log --oneline --decorate $oldrev..$newrev
+        git log --oneline --decorate "$oldrev".."$newrev"
     fi
 
     echo ""
     echo "Changed files:"
-    git diff --name-status $oldrev..$newrev | head -10
+    git diff --name-status "$oldrev".."$newrev" | head -10
 
     # Example: Trigger deployment for main branch
     if [ "$branch" = "main" ] || [ "$branch" = "master" ]; then

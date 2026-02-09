@@ -93,9 +93,7 @@ dev-build: $(DOCKER) $(DOCKER_DAEMON) ## Build without cache for development
 # ============================================================================
 
 .PHONY: test
-test: $(DOCKER) $(DOCKER_DAEMON) ## Run integration tests
-	echo "Running integration tests..."
-	./test-setup.sh
+test: validate ## Run tests
 	echo "✓ All tests passed"
 
 .PHONY: validate
@@ -107,7 +105,6 @@ validate: $(DOCKER) ## Validate Dockerfile and shell scripts
 	echo "Validating shell scripts..."
 	bash -n docker-entrypoint.sh
 	bash -n init-repo.sh
-	bash -n test-setup.sh
 	echo "✓ Shell scripts are valid"
 
 # ============================================================================

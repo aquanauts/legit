@@ -7,16 +7,16 @@
 echo "Running pre-receive hook..."
 
 # Read the pushed refs
-while read oldrev newrev refname; do
+while read -r oldrev newrev refname; do
     # Extract branch name
-    branch=$(echo "$refname" | sed 's|refs/heads/||')
+    branch="${refname#refs/heads/}"
 
     echo "Checking push to branch: $branch"
 
     # Example 1: Protect specific branches from force-push
     if [ "$oldrev" != "0000000000000000000000000000000000000000" ]; then
         # Check if this is a force push (new commit is not a descendant of old commit)
-        if ! git merge-base --is-ancestor $oldrev $newrev 2>/dev/null; then
+        if ! git merge-base --is-ancestor "$oldrev" "$newrev" 2>/dev/null; then
             if [ "$branch" = "main" ] || [ "$branch" = "master" ] || [ "$branch" = "production" ]; then
                 echo "ERROR: Force push to protected branch '$branch' is not allowed!"
                 exit 1
@@ -34,10 +34,9 @@ while read oldrev newrev refname; do
     fi
 
     # Validate commit messages (example: require issue number)
-    while read commit; do
-        message=$(git log -1 --pretty=format:'%s' $commit)
-
+    while read -r commit; do
         # Example: Require commits to reference an issue (uncomment to enforce)
+        # message=$(git log -1 --pretty=format:'%s' "$commit")
         # if ! echo "$message" | grep -qE '#[0-9]+|ISSUE-[0-9]+'; then
         #     echo "ERROR: Commit $commit does not reference an issue number"
         #     echo "Message: $message"
@@ -46,6 +45,7 @@ while read oldrev newrev refname; do
         # fi
 
         # Example: Prevent commits with 'WIP' in message to main branch (uncomment to enforce)
+        # message=$(git log -1 --pretty=format:'%s' "$commit")
         # if [ "$branch" = "main" ] && echo "$message" | grep -qi "WIP"; then
         #     echo "ERROR: Cannot push WIP commits to main branch"
         #     echo "Commit: $commit"
@@ -54,28 +54,29 @@ while read oldrev newrev refname; do
         # fi
 
         # Example: Check for merge commits (uncomment to prevent)
-        # if [ $(git rev-list --parents -n 1 $commit | wc -w) -gt 2 ]; then
+        # if [ $(git rev-list --parents -n 1 "$commit" | wc -w) -gt 2 ]; then
         #     echo "ERROR: Merge commits are not allowed"
         #     echo "Commit: $commit"
         #     echo "Please rebase instead of merging"
         #     exit 1
         # fi
-    done < <(git rev-list $commit_range)
+        true  # No-op to satisfy shellcheck when examples are commented
+    done < <(git rev-list "$commit_range")
 
     # Example 3: Check file size limits
     # Prevent pushing files larger than 100MB
     max_size=$((100 * 1024 * 1024)) # 100MB in bytes
-    while read commit; do
-        while read file; do
+    while read -r commit; do
+        while read -r file; do
             size=$(git cat-file -s "$commit:$file" 2>/dev/null || echo 0)
             if [ "$size" -gt "$max_size" ]; then
-                echo "ERROR: File too large: $file ($(numfmt --to=iec-i --suffix=B $size))"
+                echo "ERROR: File too large: $file ($(numfmt --to=iec-i --suffix=B "$size"))"
                 echo "Maximum allowed size: $(numfmt --to=iec-i --suffix=B $max_size)"
                 echo "Consider using Git LFS for large files"
                 exit 1
             fi
-        done < <(git diff-tree --no-commit-id --name-only -r $commit)
-    done < <(git rev-list $commit_range)
+        done < <(git diff-tree --no-commit-id --name-only -r "$commit")
+    done < <(git rev-list "$commit_range")
 
     # Example 4: Check for sensitive files
     sensitive_patterns=(
@@ -90,9 +91,9 @@ while read oldrev newrev refname; do
         "secrets.yml"
     )
 
-    while read commit; do
+    while read -r commit; do
         for pattern in "${sensitive_patterns[@]}"; do
-            files=$(git diff-tree --no-commit-id --name-only -r $commit | grep -E "$pattern" || true)
+            files=$(git diff-tree --no-commit-id --name-only -r "$commit" | grep -E "$pattern" || true)
             if [ -n "$files" ]; then
                 echo "WARNING: Potentially sensitive file detected: $files"
                 echo "Commit: $commit"
@@ -101,7 +102,7 @@ while read oldrev newrev refname; do
                 # exit 1
             fi
         done
-    done < <(git rev-list $commit_range)
+    done < <(git rev-list "$commit_range")
 
     echo "Branch '$branch' passed pre-receive checks"
 done

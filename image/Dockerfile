@@ -31,9 +31,9 @@ RUN mkdir -p /run/sshd && \
     mkdir -p /etc/ssh/ssh_host_keys
 
 # Copy SSH host keys
-COPY ssh_host_rsa_key ssh_host_rsa_key.pub /etc/ssh/ssh_host_keys/
-COPY ssh_host_ecdsa_key ssh_host_ecdsa_key.pub /etc/ssh/ssh_host_keys/
-COPY ssh_host_ed25519_key ssh_host_ed25519_key.pub /etc/ssh/ssh_host_keys/
+COPY keys/ssh_host_rsa_key keys/ssh_host_rsa_key.pub /etc/ssh/ssh_host_keys/
+COPY keys/ssh_host_ecdsa_key keys/ssh_host_ecdsa_key.pub /etc/ssh/ssh_host_keys/
+COPY keys/ssh_host_ed25519_key keys/ssh_host_ed25519_key.pub /etc/ssh/ssh_host_keys/
 RUN chmod 600 /etc/ssh/ssh_host_keys/ssh_host_rsa_key && \
     chmod 600 /etc/ssh/ssh_host_keys/ssh_host_ecdsa_key && \
     chmod 600 /etc/ssh/ssh_host_keys/ssh_host_ed25519_key && \

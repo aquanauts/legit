@@ -101,6 +101,12 @@ The image expects three volumes:
 
 ### Building Locally
 
+From the repository root:
+```bash
+make build
+```
+
+Or from the image directory:
 ```bash
 cd image
 make build
@@ -149,11 +155,12 @@ Checks:
 
 ### Installing Pre-commit Hooks
 
+From the repository root:
 ```bash
 make hooks
 ```
 
-This installs pre-commit hooks that run before each commit.
+This installs pre-commit hooks that run before each commit across the entire repository.
 
 ## Manual Testing
 

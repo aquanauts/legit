@@ -82,9 +82,24 @@ For detailed usage, see [CLI Documentation](cli/README.md).
 ### Build Image
 
 ```bash
+# From repository root
+make build
+make test
+
+# Or from image directory
 cd image
 make build
 make test
+```
+
+### Setup Development Environment
+
+```bash
+# Install pre-commit hooks
+make hooks
+
+# Run pre-commit checks
+make pre-commit
 ```
 
 ### Run Locally

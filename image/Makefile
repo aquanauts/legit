@@ -1,14 +1,10 @@
 SHELL := $(shell which bash)
 GIT_ROOT := $(shell git rev-parse --show-toplevel)
 TOOLS_HOME := $(GIT_ROOT)/.tools
-VIRTUAL_ENV := $(TOOLS_HOME)/venv
-GIT_PRE_COMMIT := $(GIT_ROOT)/.git/hooks/pre-commit
 DOCKER_TAG ?= latest
 IMAGE_NAME ?= legit-server
 REGISTRY ?= ghcr.io
 REGISTRY_USER ?= $(shell git config user.name | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
-
-export VIRTUAL_ENV
 
 ifndef VERBOSE
 .SILENT:
@@ -73,52 +69,12 @@ publish-latest: ## Publish as latest tag
 	$(MAKE) publish DOCKER_TAG=latest
 
 # ============================================================================
-# Development Targets
-# ============================================================================
-
-.PHONY: hooks
-hooks: $(GIT_PRE_COMMIT) ## Install pre-commit hooks
-
-.PHONY: pre-commit
-pre-commit: hooks ## Run pre-commit checks
-	$(VIRTUAL_ENV)/bin/pre-commit run --all-files
-
-# ============================================================================
-# Python/uv setup for pre-commit hooks
+# Lima/Colima/Docker installation
 # ============================================================================
 
 CURL := $(shell which curl)
 $(CURL):
 	$(error 'curl' could not be found on PATH. Please install curl)
-
-UV_ARCH := $(shell uname -m | sed 's/arm64/aarch64-apple-darwin/g' | sed 's/x86_64/x86_64-unknown-linux-gnu/g')
-UV_VERSION := 0.9.22
-UV_ROOT := $(TOOLS_HOME)/uv-$(UV_VERSION)
-UV := $(UV_ROOT)/uv-$(UV_ARCH)/uv
-$(UV): | $(CURL)
-	echo "Installing uv $(UV_VERSION)..."
-	mkdir -p $(UV_ROOT)
-	$(CURL) -Ls https://github.com/astral-sh/uv/releases/download/$(UV_VERSION)/uv-$(UV_ARCH).tar.gz | tar -xz -C $(UV_ROOT)
-
-PYTHON_DEPS := $(VIRTUAL_ENV)/.python-deps-installed
-$(PYTHON_DEPS): | $(UV)
-	echo "Installing Python environment with uv..."
-	$(UV) venv --clear $(VIRTUAL_ENV)
-	$(UV) pip install 'pre-commit>=3.0.0'
-	touch $@
-
-PRE_COMMIT := $(VIRTUAL_ENV)/bin/pre-commit
-$(PRE_COMMIT): | $(PYTHON_DEPS)
-
-$(GIT_PRE_COMMIT): $(PRE_COMMIT)
-	$(PRE_COMMIT) install
-
-.PHONY: deps
-deps: $(PYTHON_DEPS) ## Install Python dependencies
-
-# ============================================================================
-# Lima/Colima/Docker installation
-# ============================================================================
 
 LIMA_VERSION := 2.0.3
 LIMA_ROOT := $(TOOLS_HOME)/lima-$(LIMA_VERSION)
@@ -157,7 +113,7 @@ $(DOCKER_DAEMON): | $(COLIMA)
 	echo "Starting Docker Daemon with socket $(DOCKER_DAEMON)..."
 	$(COLIMA) start --cpu 2 --memory 4 --disk 50
 
-export PATH := $(TOOLS_HOME)/bin:$(LIMA_ROOT)/bin:$(DOCKER_ROOT)/docker:$(VIRTUAL_ENV)/bin:$(PATH)
+export PATH := $(TOOLS_HOME)/bin:$(LIMA_ROOT)/bin:$(DOCKER_ROOT)/docker:$(PATH)
 
 .PHONY: docker-daemon
 docker-daemon: $(DOCKER) ## Start Docker daemon (via Colima if needed)
@@ -176,11 +132,10 @@ docker-daemon-clean: | $(COLIMA) ## Stop and clean Docker daemon
 
 .PHONY: clean
 clean: ## Remove build artifacts and tools
-	echo "Cleaning up..."
+	echo "Cleaning up image build artifacts..."
 	docker rmi $(IMAGE_NAME):$(DOCKER_TAG) 2>/dev/null || true
 	docker rmi $(IMAGE_NAME):dev 2>/dev/null || true
 	docker rm -f legit-server-test 2>/dev/null || true
 	rm -rf test_key test_key.pub test-repo authorized_keys 2>/dev/null || true
 	docker volume rm git-repos ssh-host-keys 2>/dev/null || true
-	rm -rf $(TOOLS_HOME)
-	echo "✓ Cleanup complete"
+	echo "✓ Image cleanup complete"

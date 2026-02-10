@@ -3,6 +3,7 @@ set -euo pipefail
 
 IMAGE="${LEGIT_IMAGE:-ghcr.io/aquanauts/legit-server:latest}"
 SSH_PORT="${LEGIT_SSH_PORT:-2222}"
+REPOS_DIR="${LEGIT_REPOS_DIR:-${HOME}/.legit/repos}"
 AUTH_KEYS="${HOME}/.ssh/authorized_keys"
 
 if [[ ! -f "$AUTH_KEYS" ]]; then
@@ -15,9 +16,11 @@ if ! command -v docker &>/dev/null; then
     exit 1
 fi
 
+mkdir -p "$REPOS_DIR"
+
 exec docker run --rm \
     --name legit-server \
     -p "${SSH_PORT}:22" \
     -v "${AUTH_KEYS}:/home/git/.ssh/authorized_keys:ro" \
-    -v git-repos:/srv/git \
+    -v "${REPOS_DIR}:/srv/git" \
     "$IMAGE" "$@"

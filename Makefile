@@ -80,10 +80,7 @@ publish: hooks ## Publish image to registry
 
 .PHONY: run
 run: build ## Build image and run with CLI (runs in foreground)
-	echo ""
-	echo "Starting server with CLI (press Ctrl+C to stop)..."
-	echo ""
-	LEGIT_IMAGE=legit-server:latest ./cli/legit start
+	LEGIT_IMAGE=legit-server:latest ./cli/legit
 
 # ============================================================================
 # Cleanup

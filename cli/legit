@@ -1,6 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
+# Configuration
 IMAGE="${LEGIT_IMAGE:-ghcr.io/aquanauts/legit-server:latest}"
 SSH_PORT="${LEGIT_SSH_PORT:-2222}"
 LEGIT_HOME="${LEGIT_HOME:-${HOME}/.legit}"
@@ -8,6 +9,23 @@ REPOS_DIR="${LEGIT_REPOS_DIR:-${LEGIT_HOME}/repos}"
 HOST_KEYS_DIR="${LEGIT_HOST_KEYS_DIR:-${LEGIT_HOME}/host_keys}"
 AUTH_KEYS="${HOME}/.ssh/authorized_keys"
 
+# Parse arguments
+MODE="interactive"
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --headless)
+            MODE="headless"
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1" >&2
+            echo "Usage: legit [--headless]" >&2
+            exit 1
+            ;;
+    esac
+done
+
+# Validation
 if [[ ! -f "$AUTH_KEYS" ]]; then
     echo "Error: $AUTH_KEYS not found" >&2
     exit 1
@@ -18,12 +36,39 @@ if ! command -v docker &>/dev/null; then
     exit 1
 fi
 
+# Container naming based on mode
+if [ "$MODE" = "headless" ]; then
+    CONTAINER_NAME="legit-server-${SSH_PORT}"
+    DOCKER_FLAGS="-d"
+else
+    CONTAINER_NAME="legit-server-interactive"
+    DOCKER_FLAGS="-it"
+fi
+
+# Parse MOUNT_DIRS and build mount flags
+MOUNT_FLAGS=()
+if [ -n "${MOUNT_DIRS:-}" ]; then
+    IFS=':' read -ra DIRS <<< "$MOUNT_DIRS"
+    for dir in "${DIRS[@]}"; do
+        if [ -d "$dir" ]; then
+            basename=$(basename "$dir")
+            MOUNT_FLAGS+=("-v" "${dir}:/home/git/${basename}")
+        else
+            echo "Warning: $dir does not exist, skipping mount" >&2
+        fi
+    done
+fi
+
+# Create required directories
 mkdir -p "$REPOS_DIR" "$HOST_KEYS_DIR"
 
-exec docker run --rm \
-    --name legit-server \
+# Run container
+exec docker run --rm ${DOCKER_FLAGS} \
+    --name "$CONTAINER_NAME" \
     -p "${SSH_PORT}:22" \
+    -e LEGIT_MODE="$MODE" \
     -v "${AUTH_KEYS}:/home/git/.ssh/authorized_keys:ro" \
     -v "${REPOS_DIR}:/srv/git" \
     -v "${HOST_KEYS_DIR}:/etc/ssh/ssh_host_keys" \
-    "$IMAGE" "$@"
+    "${MOUNT_FLAGS[@]}" \
+    "$IMAGE"

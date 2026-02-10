@@ -6,7 +6,9 @@ RUN apt-get update && \
         openssh-server \
         git \
         ca-certificates \
-        curl && \
+        curl \
+        tmux \
+        sudo && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -17,6 +19,10 @@ RUN useradd -m -d /home/git -s /usr/bin/git-shell git && \
     touch /home/git/.ssh/authorized_keys && \
     chmod 600 /home/git/.ssh/authorized_keys && \
     chown -R git:git /home/git
+
+# Configure sudo for root to run commands as git user
+RUN echo "root ALL=(git) NOPASSWD: ALL" > /etc/sudoers.d/git-user && \
+    chmod 0440 /etc/sudoers.d/git-user
 
 # Create git-shell-commands directory (required by git-shell)
 RUN mkdir -p /home/git/git-shell-commands && \

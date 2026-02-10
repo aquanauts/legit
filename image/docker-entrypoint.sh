@@ -29,7 +29,23 @@ if [ -n "$GIT_USER_UID" ] || [ -n "$GIT_USER_GID" ]; then
     fi
 fi
 
-# SSH host keys are baked into the image
+# Generate SSH host keys if they don't exist
+echo "Checking SSH host keys..."
+if [ ! -f /etc/ssh/ssh_host_keys/ssh_host_rsa_key ]; then
+    echo "Generating RSA host key..."
+    ssh-keygen -t rsa -b 4096 -f /etc/ssh/ssh_host_keys/ssh_host_rsa_key -N "" -q
+fi
+
+if [ ! -f /etc/ssh/ssh_host_keys/ssh_host_ecdsa_key ]; then
+    echo "Generating ECDSA host key..."
+    ssh-keygen -t ecdsa -b 521 -f /etc/ssh/ssh_host_keys/ssh_host_ecdsa_key -N "" -q
+fi
+
+if [ ! -f /etc/ssh/ssh_host_keys/ssh_host_ed25519_key ]; then
+    echo "Generating Ed25519 host key..."
+    ssh-keygen -t ed25519 -f /etc/ssh/ssh_host_keys/ssh_host_ed25519_key -N "" -q
+fi
+
 echo "SSH host keys ready"
 
 # Fetch authorized_keys from URL if environment variable is set

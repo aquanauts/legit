@@ -120,5 +120,5 @@ else
     echo "Tip: Use 'Ctrl+B, D' to detach (keeps server running)"
     echo "     Use 'exit' to stop the server"
     echo ""
-    exec sudo -u git tmux new-session -s legit -c /home/git
+    exec sudo -u git tmux new-session -s legit -c /home/git /bin/bash
 fi

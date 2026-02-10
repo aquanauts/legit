@@ -13,7 +13,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Create git user with git-shell (restricted access)
-RUN useradd -m -d /home/git -s /usr/bin/git-shell git && \
+RUN useradd -m -d /home/git git && \
     mkdir -p /home/git/.ssh && \
     chmod 700 /home/git/.ssh && \
     touch /home/git/.ssh/authorized_keys && \

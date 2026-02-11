@@ -39,10 +39,6 @@ RUN mkdir -p /run/sshd && \
 # Copy SSH configuration
 COPY sshd_config /etc/ssh/sshd_config
 
-# Copy helper scripts
-COPY init-repo.sh /usr/local/bin/init-repo.sh
-RUN chmod +x /usr/local/bin/init-repo.sh
-
 # Copy entrypoint script
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh

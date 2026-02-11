@@ -82,7 +82,6 @@ publish: hooks ## Publish image to registry
 run: build ## Build image and run with CLI (runs in foreground)
 	LEGIT_IMAGE=legit-server:latest ./cli/legit
 
-
 .PHONY: run-headless
 run-headless: build ## Build image and run with CLI (runs in foreground)
 	LEGIT_IMAGE=legit-server:latest ./cli/legit --headless

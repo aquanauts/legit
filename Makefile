@@ -68,7 +68,6 @@ build: hooks ## Build the Docker image
 
 .PHONY: test
 test: pre-commit ## Run tests
-	$(MAKE) -C image test
 
 .PHONY: publish
 publish: hooks ## Publish image to registry

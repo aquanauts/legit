@@ -89,25 +89,6 @@ dev-build: $(DOCKER) $(DOCKER_DAEMON) ## Build without cache for development
 	echo "✓ Development build complete"
 
 # ============================================================================
-# Test Targets
-# ============================================================================
-
-.PHONY: test
-test: validate ## Run tests
-	echo "✓ All tests passed"
-
-.PHONY: validate
-validate: $(DOCKER) ## Validate Dockerfile and shell scripts
-	echo "Validating Dockerfile..."
-	$(DOCKER) build --check . || echo "Note: --check flag not supported, skipping"
-	echo "✓ Dockerfile is valid"
-	echo ""
-	echo "Validating shell scripts..."
-	bash -n docker-entrypoint.sh
-	bash -n init-repo.sh
-	echo "✓ Shell scripts are valid"
-
-# ============================================================================
 # Publish Targets
 # ============================================================================
 

@@ -7,10 +7,11 @@ REPO_NAME=$(basename "$REPO_DIR")
 
 function clone_repo {
   local ref_name=$1
-  local work_base="/home/git/work/$REPO_NAME/$ref_name"
+  local work_dir
+  work_dir="/home/git/work/$REPO_NAME/$ref_name/$(date +%F_%H_%M_%S)"
 
-  mkdir -p "$work_base"
-  git clone "$REPO_DIR" "$work_base"
+  git clone "$REPO_DIR" "$work_dir"
+  GIT_WORK_TREE=$work_dir GIT_DIR="${work_dir}/.git" git checkout main
 }
 
 # shellcheck disable=SC2034

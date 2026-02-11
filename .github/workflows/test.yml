@@ -10,7 +10,7 @@ on:
 
 jobs:
   test:
-    name: Integration Tests
+    name: Tests
     runs-on: ubuntu-latest
 
     steps:
@@ -20,20 +20,5 @@ jobs:
       - name: Set up Docker
         uses: docker/setup-buildx-action@v3
 
-      - name: Build image
-        run: |
-          cd image
-          docker build -t legit-server:test .
-
-      - name: Run integration tests
-        run: |
-          cd image
-          chmod +x test-setup.sh
-          ./test-setup.sh
-
-      - name: Validate shell scripts
-        run: |
-          cd image
-          bash -n docker-entrypoint.sh
-          bash -n init-repo.sh
-          bash -n test-setup.sh
+      - name: Run tests
+        run: make test

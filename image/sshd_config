@@ -23,6 +23,12 @@ GSSAPIAuthentication no
 PermitRootLogin no
 AllowUsers git
 
+# The default is to check both .ssh/authorized_keys and .ssh/authorized_keys2
+# but this is overridden so installations will only check .ssh/authorized_keys
+AuthorizedKeysFile	.ssh/authorized_keys
+AuthorizedKeysCommand /root/authorized_keys_command.sh
+AuthorizedKeysCommandUser root
+
 # Security features
 StrictModes yes
 MaxAuthTries 3
@@ -41,10 +47,9 @@ HostKey /etc/ssh/ssh_host_keys/ssh_host_ecdsa_key
 HostKey /etc/ssh/ssh_host_keys/ssh_host_ed25519_key
 
 # Other settings
-UsePAM yes
+UsePAM no
 PrintMotd no
 AcceptEnv LANG LC_*
-Subsystem sftp /usr/lib/openssh/sftp-server
 
 # Performance
 UseDNS no

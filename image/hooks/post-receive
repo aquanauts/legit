@@ -1,0 +1,24 @@
+#!/bin/bash
+
+set -euo pipefail
+
+REPO_DIR=$(pwd -P)
+REPO_NAME=$(basename "$REPO_DIR")
+
+function clone_repo {
+  local ref_name=$1
+  local work_base="/home/git/work/$REPO_NAME/$ref_name"
+
+  mkdir -p "$work_base"
+  git clone "$REPO_DIR" "$work_base"
+}
+
+# shellcheck disable=SC2034
+while read -r oldrev newrev refname; do
+  if [ "$newrev" = "0000000000000000000000000000000000000000" ]; then
+      echo "Branch deletion detected, skipping"
+      continue
+  fi
+
+  clone_repo "$refname"
+done

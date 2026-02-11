@@ -14,23 +14,21 @@ RUN apt-get update && \
 
 # Create git user with git-shell (restricted access)
 RUN useradd -m -d /home/git git && \
+    passwd -d git && \
     mkdir -p /home/git/.ssh && \
     chmod 700 /home/git/.ssh && \
     touch /home/git/.ssh/authorized_keys && \
-    chmod 600 /home/git/.ssh/authorized_keys && \
-    chown -R git:git /home/git
+    chmod 600 /home/git/.ssh/authorized_keys
 
 # Configure sudo for root to run commands as git user
 RUN echo "root ALL=(git) NOPASSWD: ALL" > /etc/sudoers.d/git-user && \
     chmod 0440 /etc/sudoers.d/git-user
 
 # Create git-shell-commands directory (required by git-shell)
-RUN mkdir -p /home/git/git-shell-commands && \
-    chown git:git /home/git/git-shell-commands
+RUN mkdir -p /home/git/git-shell-commands
 
 # Create repository directory
-RUN mkdir -p /home/git/repos && \
-    chown git:git /home/git/repos
+RUN mkdir -p /home/git/repos
 
 # Configure SSH server
 RUN mkdir -p /run/sshd && \
@@ -43,8 +41,20 @@ COPY sshd_config /etc/ssh/sshd_config
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
+COPY authorized_keys_command.sh /root/authorized_keys_command.sh
+RUN chmod +x /root/authorized_keys_command.sh
+
+COPY git-shell-wrapper /usr/bin/git-shell-wrapper
+RUN chmod +x /usr/bin/git-shell-wrapper
+
+COPY hooks /home/git/hooks
+RUN chmod +x /home/git/hooks/*
+
+# Ensure git owns all files in home dir
+RUN chown -R git:git /home/git
+
 # Declare volumes
-VOLUME ["/home/git/repos", "/home/git/.ssh", "/etc/ssh/ssh_host_keys"]
+VOLUME ["/home/git/.ssh", "/etc/ssh/ssh_host_keys"]
 
 # Expose SSH port
 EXPOSE 22

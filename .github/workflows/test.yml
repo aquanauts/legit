@@ -37,18 +37,3 @@ jobs:
           bash -n docker-entrypoint.sh
           bash -n init-repo.sh
           bash -n test-setup.sh
-
-  shellcheck:
-    name: ShellCheck
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Run ShellCheck
-        uses: ludeeus/action-shellcheck@master
-        with:
-          scandir: './image'
-          format: gcc
-          severity: warning

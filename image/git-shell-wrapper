@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+echo "$(date) Received login" >> /home/git/logs.txt
+
+function init_repo {
+  git config --global init.defaultBranch main
+  local repo_dir=$1
+  if [[ ! -d "$repo_dir" ]]; then
+    mkdir -p "$repo_dir"
+    (cd "$repo_dir" && git init --bare)
+    cp /home/git/hooks/* "$repo_dir"/hooks/
+  fi
+}
+
+function receive_pack {
+  local repo_dir=$1
+  init_repo "${repo_dir}" &>> /home/git/logs.txt
+  exec /usr/bin/git-shell -c "git-receive-pack '${repo_dir}'"
+}
+
+if [[ -n "${SSH_ORIGINAL_COMMAND:-""}" ]]; then
+  echo "$(date) SSH command: $SSH_ORIGINAL_COMMAND" >> /home/git/logs.txt
+
+  read -r command arg <<< "$SSH_ORIGINAL_COMMAND"
+  repo_dir="/home/git/repos/${arg//\'/}"
+  init_repo "${repo_dir}" &>> /home/git/logs.txt
+  exec /usr/bin/git-shell -c "$command '$repo_dir'"
+fi

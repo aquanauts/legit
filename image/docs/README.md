@@ -80,7 +80,7 @@ image/
 
 The image expects three volumes:
 
-1. **`/srv/git`** - Git repositories (required)
+1. **`/home/git/repos`** - Git repositories (required)
 2. **`/home/git/.ssh/authorized_keys`** - SSH public keys (required)
 3. **`/etc/ssh/ssh_host_keys`** - Persistent SSH host keys (recommended)
 
@@ -91,7 +91,6 @@ The image expects three volumes:
 | `GIT_USER_UID` | Set git user's UID (for permission matching) | - |
 | `GIT_USER_GID` | Set git user's GID | - |
 | `SSH_AUTHORIZED_KEYS_URL` | Fetch keys from URL (e.g., GitHub) | - |
-| `REPOSITORIES_HOME_LINK` | Create symlink `/home/git/repos` → `/srv/git` | `false` |
 
 ### Exposed Ports
 
@@ -179,7 +178,7 @@ docker run -d \
   --name legit-server-dev \
   -p 2222:22 \
   -v $(pwd)/authorized_keys:/home/git/.ssh/authorized_keys:ro \
-  -v git-repos-dev:/srv/git \
+  -v git-repos-dev:/home/git/repos \
   -v ssh-host-keys-dev:/etc/ssh/ssh_host_keys \
   legit-server:latest
 
@@ -187,7 +186,7 @@ docker run -d \
 docker exec legit-server-dev /usr/local/bin/init-repo.sh test
 
 # Clone it
-git clone ssh://git@localhost:2222/srv/git/test.git
+git clone ssh://git@localhost:2222/home/git/repos/test.git
 
 # Test push
 cd test
@@ -210,9 +209,8 @@ docker run -d \
   -p 2222:22 \
   -e GIT_USER_UID=$(id -u) \
   -e GIT_USER_GID=$(id -g) \
-  -e REPOSITORIES_HOME_LINK=true \
   -v $(pwd)/authorized_keys:/home/git/.ssh/authorized_keys:ro \
-  -v git-repos-test:/srv/git \
+  -v git-repos-test:/home/git/repos \
   -v ssh-host-keys-test:/etc/ssh/ssh_host_keys \
   legit-server:latest
 ```

@@ -41,22 +41,22 @@ Runs **once per branch** being updated (whereas pre-receive runs once for all re
 
 ```bash
 # Copy hook to repository
-docker cp examples/hooks/post-receive git-server:/srv/git/myrepo.git/hooks/
+docker cp examples/hooks/post-receive git-server:/home/git/repos/myrepo.git/hooks/
 
 # Make executable and set ownership
-docker exec git-server chmod +x /srv/git/myrepo.git/hooks/post-receive
-docker exec git-server chown git:git /srv/git/myrepo.git/hooks/post-receive
+docker exec git-server chmod +x /home/git/repos/myrepo.git/hooks/post-receive
+docker exec git-server chown git:git /home/git/repos/myrepo.git/hooks/post-receive
 ```
 
 ### Option 2: Create inside container
 
 ```bash
-docker exec git-server bash -c 'cat > /srv/git/myrepo.git/hooks/post-receive << "EOF"
+docker exec git-server bash -c 'cat > /home/git/repos/myrepo.git/hooks/post-receive << "EOF"
 #!/bin/bash
 echo "Push received at $(date)"
 EOF'
 
-docker exec git-server chmod +x /srv/git/myrepo.git/hooks/post-receive
+docker exec git-server chmod +x /home/git/repos/myrepo.git/hooks/post-receive
 ```
 
 ## Customizing Hooks
@@ -76,7 +76,7 @@ These examples are templates - edit them to fit your needs:
 
 Hooks run with these characteristics:
 - **User**: `git`
-- **Working directory**: Repository directory (e.g., `/srv/git/myrepo.git`)
+- **Working directory**: Repository directory (e.g., `/home/git/repos/myrepo.git`)
 - **Standard input**: For receive hooks, receives: `<old-sha1> <new-sha1> <ref-name>`
 - **Exit code**: Non-zero rejects the operation (pre-receive, update only)
 
@@ -179,8 +179,8 @@ git commit -m "test"
 
 ```bash
 # Deploy hook
-docker cp examples/hooks/post-receive git-server:/srv/git/test.git/hooks/
-docker exec git-server chmod +x /srv/git/test.git/hooks/post-receive
+docker cp examples/hooks/post-receive git-server:/home/git/repos/test.git/hooks/
+docker exec git-server chmod +x /home/git/repos/test.git/hooks/post-receive
 
 # Make a test push
 cd test-repo

@@ -55,14 +55,14 @@ Creating repository: myproject
 ✓ Repository created: myproject.git
 
 Clone with:
-  git clone ssh://git@localhost:2222/srv/git/myproject.git
+  git clone ssh://git@localhost:2222/home/git/repos/myproject.git
 ```
 
 ## Step 4: Clone and Use
 
 ```bash
 # Clone the repository
-git clone ssh://git@localhost:2222/srv/git/myproject.git
+git clone ssh://git@localhost:2222/home/git/repos/myproject.git
 cd myproject
 
 # Add some content
@@ -93,7 +93,7 @@ Host mygit
 
 Now you can use shorter commands:
 ```bash
-git clone mygit:/srv/git/myproject.git
+git clone mygit:/home/git/repos/myproject.git
 git push mygit
 git pull mygit
 ```
@@ -244,7 +244,7 @@ To run on a remote server:
 5. **Clone from remote:**
    ```bash
    legit create-repo myproject  # On server
-   git clone gitserver:/srv/git/myproject.git  # On local
+   git clone gitserver:/home/git/repos/myproject.git  # On local
    ```
 
 ## Backup Your Repositories
@@ -260,7 +260,7 @@ docker run --rm \
   ubuntu tar czf /backup/git-backup-$(date +%Y%m%d).tar.gz /data
 
 # Or copy directly
-docker cp legit-server:/srv/git ~/git-backup
+docker cp legit-server:/home/git/repos ~/git-backup
 
 # Restart server
 legit start

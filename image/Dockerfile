@@ -29,8 +29,8 @@ RUN mkdir -p /home/git/git-shell-commands && \
     chown git:git /home/git/git-shell-commands
 
 # Create repository directory
-RUN mkdir -p /srv/git && \
-    chown git:git /srv/git
+RUN mkdir -p /home/git/repos && \
+    chown git:git /home/git/repos
 
 # Configure SSH server
 RUN mkdir -p /run/sshd && \
@@ -48,7 +48,7 @@ COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Declare volumes
-VOLUME ["/srv/git", "/home/git/.ssh", "/etc/ssh/ssh_host_keys"]
+VOLUME ["/home/git/repos", "/home/git/.ssh", "/etc/ssh/ssh_host_keys"]
 
 # Expose SSH port
 EXPOSE 22

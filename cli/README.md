@@ -53,7 +53,7 @@ legit create-repo myproject
 ### 3. Clone and use
 
 ```bash
-git clone ssh://git@localhost:2222/srv/git/myproject.git
+git clone ssh://git@localhost:2222/home/git/repos/myproject.git
 cd myproject
 
 # Add some content
@@ -94,7 +94,6 @@ CONTAINER_NAME=legit-server
 SSH_PORT=2222
 GIT_USER_UID=1000
 GIT_USER_GID=1000
-REPOSITORIES_HOME_LINK=true
 ```
 
 ### Environment Variables
@@ -150,7 +149,7 @@ Host mygit
 Then clone with shorter syntax:
 
 ```bash
-git clone mygit:/srv/git/myproject.git
+git clone mygit:/home/git/repos/myproject.git
 ```
 
 ## Remote Server Setup
@@ -169,7 +168,7 @@ To run on a remote server:
 
 3. **Clone from your local machine:**
    ```bash
-   git clone ssh://git@server.example.com:2222/srv/git/myproject.git
+   git clone ssh://git@server.example.com:2222/home/git/repos/myproject.git
    ```
 
 4. **Configure SSH (recommended):**
@@ -183,7 +182,7 @@ To run on a remote server:
 
    Then clone with:
    ```bash
-   git clone gitserver:/srv/git/myproject.git
+   git clone gitserver:/home/git/repos/myproject.git
    ```
 
 ## Updating
@@ -204,7 +203,7 @@ legit restart
 
 ```bash
 # Using docker cp
-docker cp legit-server:/srv/git ~/git-backup
+docker cp legit-server:/home/git/repos ~/git-backup
 
 # Or backup the volume
 docker run --rm \
@@ -217,11 +216,11 @@ docker run --rm \
 
 ```bash
 # Copy backup to container
-docker cp ~/git-backup/myproject.git legit-server:/srv/git/
+docker cp ~/git-backup/myproject.git legit-server:/home/git/repos/
 
 # Fix permissions
 legit shell
-chown -R git:git /srv/git
+chown -R git:git /home/git/repos
 ```
 
 ## Troubleshooting
@@ -271,7 +270,7 @@ legit list-repos
 
 # Check repository exists
 legit shell
-ls -la /srv/git
+ls -la /home/git/repos
 ```
 
 ## Documentation

@@ -170,7 +170,7 @@ legit create-repo <name>
 - `<name>` - Repository name (required)
 
 **Behavior:**
-- Creates bare repository at `/srv/git/<name>.git`
+- Creates bare repository at `/home/git/repos/<name>.git`
 - Sets proper ownership (git:git)
 - Makes repository ready for cloning
 
@@ -178,17 +178,17 @@ legit create-repo <name>
 ```bash
 $ legit create-repo myproject
 Creating repository: myproject
-Initialized empty Git repository in /srv/git/myproject.git/
+Initialized empty Git repository in /home/git/repos/myproject.git/
 ✓ Repository created: myproject.git
 
 Clone with:
-  git clone ssh://git@localhost:2222/srv/git/myproject.git
+  git clone ssh://git@localhost:2222/home/git/repos/myproject.git
 ```
 
 **Clone URLs:**
-- Standard: `ssh://git@localhost:2222/srv/git/myproject.git`
-- SCP-style: `git@localhost:2222:/srv/git/myproject.git`
-- With SSH config: `gitserver:/srv/git/myproject.git`
+- Standard: `ssh://git@localhost:2222/home/git/repos/myproject.git`
+- SCP-style: `git@localhost:2222:/home/git/repos/myproject.git`
+- With SSH config: `gitserver:/home/git/repos/myproject.git`
 
 ---
 
@@ -202,7 +202,7 @@ legit list-repos
 ```
 
 **Output:**
-Shows all repositories in `/srv/git/` with:
+Shows all repositories in `/home/git/repos/` with:
 - Permissions
 - Owner
 - Size
@@ -237,7 +237,7 @@ legit shell
 **Examples:**
 ```bash
 $ legit shell
-root@container:/# ls /srv/git
+root@container:/# ls /home/git/repos
 myproject.git  another-repo.git
 
 root@container:/# cat /home/git/.ssh/authorized_keys
@@ -346,9 +346,6 @@ SSH_PORT=2222
 # Git user UID/GID (optional)
 GIT_USER_UID=1000
 GIT_USER_GID=1000
-
-# Create symlink /home/git/repos -> /srv/git
-REPOSITORIES_HOME_LINK=true
 ```
 
 ### Environment Variables
@@ -387,7 +384,7 @@ legit start
 legit create-repo myproject
 
 # Clone
-git clone ssh://git@localhost:2222/srv/git/myproject.git
+git clone ssh://git@localhost:2222/home/git/repos/myproject.git
 ```
 
 ### Daily Usage
@@ -439,7 +436,7 @@ legit restart
 legit stop
 
 # Backup repositories
-docker cp legit-server:/srv/git ~/git-backup
+docker cp legit-server:/home/git/repos ~/git-backup
 
 # Start server
 legit start
@@ -464,7 +461,7 @@ legit start
 
 ### Docker Volumes
 
-- `git-repos` - Mounted at `/srv/git` (repositories)
+- `git-repos` - Mounted at `/home/git/repos` (repositories)
 - `ssh-host-keys` - Mounted at `/etc/ssh/ssh_host_keys` (persistent host keys)
 
 ---
@@ -483,7 +480,7 @@ Host mygit
 
 Then use shorter commands:
 ```bash
-git clone mygit:/srv/git/myproject.git
+git clone mygit:/home/git/repos/myproject.git
 ```
 
 For remote servers:
@@ -496,7 +493,7 @@ Host gitserver
 ```
 
 ```bash
-git clone gitserver:/srv/git/myproject.git
+git clone gitserver:/home/git/repos/myproject.git
 ```
 
 ---

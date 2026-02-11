@@ -150,7 +150,7 @@ make start
 make create-repo NAME=myproject
 
 # 4. Clone and use
-git clone ssh://git@localhost:2222/srv/git/myproject.git
+git clone ssh://git@localhost:2222/home/git/repos/myproject.git
 ```
 
 ### Testing

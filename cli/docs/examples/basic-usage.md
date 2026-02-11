@@ -17,7 +17,7 @@ legit start
 legit create-repo myproject
 
 # Clone it
-git clone ssh://git@localhost:2222/srv/git/myproject.git
+git clone ssh://git@localhost:2222/home/git/repos/myproject.git
 cd myproject
 
 # Add content
@@ -46,15 +46,15 @@ legit create-repo mobile-app
 legit list-repos
 
 # Clone the ones you need
-git clone ssh://git@localhost:2222/srv/git/website.git
-git clone ssh://git@localhost:2222/srv/git/api.git
+git clone ssh://git@localhost:2222/home/git/repos/website.git
+git clone ssh://git@localhost:2222/home/git/repos/api.git
 ```
 
 ### Working with existing repositories
 
 ```bash
 # Clone
-git clone ssh://git@localhost:2222/srv/git/website.git
+git clone ssh://git@localhost:2222/home/git/repos/website.git
 cd website
 
 # Make changes
@@ -83,7 +83,7 @@ legit restart
 
 # Team members can now clone
 # (on their machines)
-git clone ssh://git@yourserver.com:2222/srv/git/project.git
+git clone ssh://git@yourserver.com:2222/home/git/repos/project.git
 ```
 
 ### Setting up shared access
@@ -93,7 +93,7 @@ git clone ssh://git@yourserver.com:2222/srv/git/project.git
 legit create-repo team-project
 
 # Share clone URL with team
-echo "Clone with: git clone ssh://git@yourserver.com:2222/srv/git/team-project.git"
+echo "Clone with: git clone ssh://git@yourserver.com:2222/home/git/repos/team-project.git"
 
 # Each team member adds SSH config
 # ~/.ssh/config
@@ -104,7 +104,7 @@ Host teamgit
     IdentityFile ~/.ssh/id_rsa
 
 # Then they can use
-git clone teamgit:/srv/git/team-project.git
+git clone teamgit:/home/git/repos/team-project.git
 ```
 
 ## Server Management
@@ -142,7 +142,7 @@ legit list-repos
 
 # Open shell for inspection
 legit shell
-ls -la /srv/git
+ls -la /home/git/repos
 exit
 ```
 
@@ -160,7 +160,7 @@ EOF
 legit restart
 
 # Now use port 2223
-git clone ssh://git@localhost:2223/srv/git/myproject.git
+git clone ssh://git@localhost:2223/home/git/repos/myproject.git
 ```
 
 ### Using specific image version
@@ -206,7 +206,7 @@ Host localgit
 EOF
 
 # Now use shorter commands
-git clone localgit:/srv/git/myproject.git
+git clone localgit:/home/git/repos/myproject.git
 git push localgit
 git pull localgit
 ```
@@ -226,7 +226,7 @@ Host mygitserver
 EOF
 
 # Use anywhere
-git clone mygitserver:/srv/git/myproject.git
+git clone mygitserver:/home/git/repos/myproject.git
 ```
 
 ### Multiple servers
@@ -248,8 +248,8 @@ Host prodgit
 EOF
 
 # Use specific servers
-git clone devgit:/srv/git/myproject.git
-git clone prodgit:/srv/git/myproject.git
+git clone devgit:/home/git/repos/myproject.git
+git clone prodgit:/home/git/repos/myproject.git
 ```
 
 ## Maintenance
@@ -346,7 +346,7 @@ cat ~/.config/legit/authorized_keys
 legit shell
 
 # Inside container
-ls -la /srv/git
+ls -la /home/git/repos
 ls -la /home/git/.ssh
 
 # Exit shell
@@ -366,7 +366,7 @@ legit list-repos
 
 # Check if repository exists
 legit shell
-ls /srv/git
+ls /home/git/repos
 exit
 
 # Create if missing
@@ -420,7 +420,7 @@ docker ps | grep legit
     ssh-keyscan -p 2222 git-server.example.com >> ~/.ssh/known_hosts
 
     # Push to server
-    git remote add production ssh://git@git-server.example.com:2222/srv/git/myapp.git
+    git remote add production ssh://git@git-server.example.com:2222/home/git/repos/myapp.git
     git push production main
 ```
 
@@ -432,7 +432,7 @@ git clone https://github.com/username/project.git
 cd project
 
 # Add legit server as remote
-git remote add backup ssh://git@localhost:2222/srv/git/project.git
+git remote add backup ssh://git@localhost:2222/home/git/repos/project.git
 
 # Push to backup
 git push backup --all

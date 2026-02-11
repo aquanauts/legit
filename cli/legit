@@ -67,7 +67,7 @@ exec docker run --rm ${DOCKER_FLAGS} \
     -p "${SSH_PORT}:22" \
     -e LEGIT_MODE="$MODE" \
     -v "${AUTH_KEYS}:/home/git/.ssh/authorized_keys:ro" \
-    -v "${REPOS_DIR}:/srv/git" \
+    -v "${REPOS_DIR}:/home/git/repos" \
     -v "${HOST_KEYS_DIR}:/etc/ssh/ssh_host_keys" \
     "${MOUNT_FLAGS[@]+"${MOUNT_FLAGS[@]}"}" \
     "$IMAGE"

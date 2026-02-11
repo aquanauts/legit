@@ -9,12 +9,12 @@ if [ $# -eq 0 ]; then
     echo "Usage: $0 <repository-name>"
     echo ""
     echo "Example: $0 myproject"
-    echo "This will create: /srv/git/myproject.git"
+    echo "This will create: /home/git/repos/myproject.git"
     exit 1
 fi
 
 REPO_NAME="$1"
-REPO_DIR="/srv/git/${REPO_NAME}.git"
+REPO_DIR="/home/git/repos/${REPO_NAME}.git"
 
 # Check if repository already exists
 if [ -d "$REPO_DIR" ]; then
@@ -37,8 +37,5 @@ echo ""
 echo "Repository created successfully!"
 echo ""
 echo "Clone with:"
-echo "  git clone ssh://git@<host>:<port>$REPO_DIR"
-echo ""
-echo "Or if REPOSITORIES_HOME_LINK=true:"
 echo "  git clone ssh://git@<host>:<port>/home/git/repos/${REPO_NAME}.git"
 echo ""

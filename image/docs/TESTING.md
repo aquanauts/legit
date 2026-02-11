@@ -111,17 +111,17 @@ ssh -i test_key -p 2222 ubuntu@localhost
 ```bash
 docker exec git-server-test /usr/local/bin/init-repo.sh test-repo
 ```
-**Expected:** Success message, repository created at `/srv/git/test-repo.git`
+**Expected:** Success message, repository created at `/home/git/repos/test-repo.git`
 
 #### Verify repository structure
 ```bash
-docker exec git-server-test ls -la /srv/git/test-repo.git
+docker exec git-server-test ls -la /home/git/repos/test-repo.git
 ```
 **Expected:** Bare git repository structure (HEAD, objects/, refs/, etc.)
 
 #### Test repository ownership
 ```bash
-docker exec git-server-test stat -c '%U:%G' /srv/git/test-repo.git
+docker exec git-server-test stat -c '%U:%G' /home/git/repos/test-repo.git
 ```
 **Expected:** `git:git`
 
@@ -130,7 +130,7 @@ docker exec git-server-test stat -c '%U:%G' /srv/git/test-repo.git
 #### Clone repository
 ```bash
 export GIT_SSH_COMMAND="ssh -i $(pwd)/test_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
-git clone ssh://git@localhost:2222/srv/git/test-repo.git
+git clone ssh://git@localhost:2222/home/git/repos/test-repo.git
 ```
 **Expected:** Clone succeeds, creates `test-repo` directory.
 
@@ -151,7 +151,7 @@ git push origin main
 ```bash
 cd ..
 rm -rf test-repo
-git clone ssh://git@localhost:2222/srv/git/test-repo.git test-repo-2
+git clone ssh://git@localhost:2222/home/git/repos/test-repo.git test-repo-2
 cd test-repo-2
 cat README.md
 ```
@@ -161,7 +161,7 @@ cat README.md
 
 #### Create post-receive hook
 ```bash
-docker exec git-server-test bash -c 'cat > /srv/git/test-repo.git/hooks/post-receive << "EOF"
+docker exec git-server-test bash -c 'cat > /home/git/repos/test-repo.git/hooks/post-receive << "EOF"
 #!/bin/bash
 echo "HOOK_OUTPUT: Push received at $(date)"
 while read oldrev newrev refname; do
@@ -169,7 +169,7 @@ while read oldrev newrev refname; do
 done
 EOF'
 
-docker exec git-server-test chmod +x /srv/git/test-repo.git/hooks/post-receive
+docker exec git-server-test chmod +x /home/git/repos/test-repo.git/hooks/post-receive
 ```
 
 #### Test hook executes
@@ -184,13 +184,13 @@ git push origin main
 
 #### Test pre-receive hook (rejection)
 ```bash
-docker exec git-server-test bash -c 'cat > /srv/git/test-repo.git/hooks/pre-receive << "EOF"
+docker exec git-server-test bash -c 'cat > /home/git/repos/test-repo.git/hooks/pre-receive << "EOF"
 #!/bin/bash
 echo "ERROR: Pre-receive hook rejecting push"
 exit 1
 EOF'
 
-docker exec git-server-test chmod +x /srv/git/test-repo.git/hooks/pre-receive
+docker exec git-server-test chmod +x /home/git/repos/test-repo.git/hooks/pre-receive
 
 # Try to push (should fail)
 echo "another update" >> README.md
@@ -211,7 +211,7 @@ docker start git-server-test
 sleep 3
 
 # Verify repository still exists
-docker exec git-server-test ls /srv/git/test-repo.git
+docker exec git-server-test ls /home/git/repos/test-repo.git
 ```
 **Expected:** Repository still exists after restart.
 
@@ -258,25 +258,6 @@ docker stop git-server-url-test
 docker rm git-server-url-test
 ```
 
-#### Test REPOSITORIES_HOME_LINK
-```bash
-docker run -d \
-  --name git-server-link-test \
-  -p 2223:22 \
-  -e REPOSITORIES_HOME_LINK=true \
-  -v $(pwd)/authorized_keys:/home/git/.ssh/authorized_keys:ro \
-  git-server:test
-
-# Check symlink exists
-docker exec git-server-link-test ls -la /home/git/repos
-```
-**Expected:** Symlink `/home/git/repos -> /srv/git` exists.
-
-```bash
-docker stop git-server-link-test
-docker rm git-server-link-test
-```
-
 ### 10. Multi-User Test
 
 ```bash
@@ -308,7 +289,7 @@ done
 
 # Clone all repositories
 for i in {1..10}; do
-    git clone ssh://git@localhost:2222/srv/git/repo-$i.git
+    git clone ssh://git@localhost:2222/home/git/repos/repo-$i.git
 done
 
 # Time a large push
@@ -362,7 +343,7 @@ Test concurrent operations:
 
 ```bash
 # Terminal 1
-git clone ssh://git@localhost:2222/srv/git/test-repo.git test-1
+git clone ssh://git@localhost:2222/home/git/repos/test-repo.git test-1
 cd test-1
 echo "from client 1" > file1.txt
 git add file1.txt
@@ -370,7 +351,7 @@ git commit -m "From client 1"
 git push origin main
 
 # Terminal 2 (simultaneously)
-git clone ssh://git@localhost:2222/srv/git/test-repo.git test-2
+git clone ssh://git@localhost:2222/home/git/repos/test-repo.git test-2
 cd test-2
 echo "from client 2" > file2.txt
 git add file2.txt

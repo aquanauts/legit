@@ -21,7 +21,7 @@ legit start
 legit create-repo myproject
 
 # Clone
-git clone ssh://git@localhost:2222/srv/git/myproject.git
+git clone ssh://git@localhost:2222/home/git/repos/myproject.git
 ```
 
 **Features:**
@@ -67,7 +67,7 @@ legit start
 legit create-repo myproject
 
 # Clone and use
-git clone ssh://git@localhost:2222/srv/git/myproject.git
+git clone ssh://git@localhost:2222/home/git/repos/myproject.git
 cd myproject
 echo "# My Project" > README.md
 git add README.md
@@ -113,7 +113,7 @@ docker run -d \
   --name legit-server \
   -p 2222:22 \
   -v $(pwd)/authorized_keys:/home/git/.ssh/authorized_keys:ro \
-  -v git-repos:/srv/git \
+  -v git-repos:/home/git/repos \
   -v ssh-host-keys:/etc/ssh/ssh_host_keys \
   legit-server:latest
 ```
@@ -190,7 +190,7 @@ Run Git server in isolated networks without internet access.
 │                       ↓                                 │
 │              Docker Volumes                             │
 │         ┌──────────────────────────┐                   │
-│         │   /srv/git               │ ← Repositories    │
+│         │   /home/git/repos               │ ← Repositories    │
 │         │   /home/git/.ssh         │ ← SSH keys        │
 │         │   /etc/ssh/ssh_host_keys │ ← Host keys       │
 │         └──────────────────────────┘                   │

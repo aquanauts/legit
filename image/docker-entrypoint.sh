@@ -25,7 +25,7 @@ if [ -n "$GIT_USER_UID" ] || [ -n "$GIT_USER_GID" ]; then
 
         # Update ownership of git's files
         echo "Updating file ownership (this may take a moment)..."
-        chown -R git:git /home/git /srv/git 2>/dev/null || true
+        chown -R git:git /home/git /home/git/repos 2>/dev/null || true
     fi
 fi
 
@@ -60,15 +60,6 @@ if [ -n "$SSH_AUTHORIZED_KEYS_URL" ]; then
     fi
 fi
 
-# Create symlink from /home/git/repos to /srv/git if requested
-if [ "$REPOSITORIES_HOME_LINK" = "true" ]; then
-    if [ ! -e /home/git/repos ]; then
-        echo "Creating symlink /home/git/repos -> /srv/git"
-        ln -s /srv/git /home/git/repos
-        chown -h git:git /home/git/repos
-    fi
-fi
-
 # Ensure proper permissions on SSH directory and authorized_keys
 echo "Setting SSH directory permissions..."
 chmod 700 /home/git/.ssh
@@ -97,11 +88,11 @@ fi
 # Display server information
 echo ""
 echo "=== Git Server Ready ==="
-echo "Repositories directory: /srv/git"
+echo "Repositories directory: /home/git/repos"
 echo "SSH user: git"
 echo "SSH shell: $(getent passwd git | cut -d: -f7)"
 echo "To create a repository: docker exec <container> /usr/local/bin/init-repo.sh <repo-name>"
-echo "To clone: git clone ssh://git@<host>:<port>/srv/git/<repo-name>.git"
+echo "To clone: git clone ssh://git@<host>:<port>/home/git/repos/<repo-name>.git"
 echo ""
 
 # Determine mode (headless or interactive)

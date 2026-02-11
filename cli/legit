@@ -8,6 +8,7 @@ LEGIT_HOME="${LEGIT_HOME:-${HOME}/.legit}"
 REPOS_DIR="${LEGIT_REPOS_DIR:-${LEGIT_HOME}/repos}"
 HOST_KEYS_DIR="${LEGIT_HOST_KEYS_DIR:-${LEGIT_HOME}/host_keys}"
 AUTH_KEYS="${HOME}/.ssh/authorized_keys"
+CONTAINER_NAME="legit-server-${SSH_PORT}"
 
 # Parse arguments
 MODE="interactive"
@@ -38,10 +39,8 @@ fi
 
 # Container naming based on mode
 if [ "$MODE" = "headless" ]; then
-    CONTAINER_NAME="legit-server-${SSH_PORT}"
     DOCKER_FLAGS="-d"
 else
-    CONTAINER_NAME="legit-server-interactive"
     DOCKER_FLAGS="-it"
 fi
 

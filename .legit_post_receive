@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Example of a post-receive script that will be executed by Legit
+
+# The working directory of this script will be a freshly cloned local repository, updated to the branch and
+# version that was just pushed.
+
+pwd
+
+# The parameters passed to the script will be the old revision and new revision SHAs
+
+old_rev=$1
+new_rev=$2
+
+echo "Updated from ${old_rev} to ${new_rev}"
+
+git log "${old_rev}...${new_rev}"

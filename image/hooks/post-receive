@@ -5,30 +5,47 @@ set -euo pipefail
 REPO_DIR=$(pwd -P)
 REPO_NAME=$(basename "$REPO_DIR")
 
+function run_post_receive {
+  local ref_name=$1
+  local old_rev=$2
+  local new_rev=$3
+  git checkout "$(basename "$ref_name")"
+  if [[ -e .legit_post_receive ]]; then
+    if [[ -x .legit_post_receive ]]; then
+      ./.legit_post_receive "$old_rev" "$new_rev"
+    else
+      echo "ERROR: .legit_post_receive exists but is not executable"
+      exit 1
+    fi
+  fi
+}
+
 function clone_repo {
   local ref_name=$1
+  local old_rev=$2
+  local new_rev=$3
   local work_dir
   work_dir="/home/git/work/$REPO_NAME/$ref_name/$(date +%F)/$(date +%H_%M_%S)"
 
   git clone "$REPO_DIR" "$work_dir"
-  GIT_WORK_TREE=$work_dir GIT_DIR="${work_dir}/.git" git checkout main
+  cd "$work_dir"
+  GIT_WORK_TREE=$work_dir GIT_DIR="${work_dir}/.git" run_post_receive "$ref_name" "$old_rev" "$new_rev"
 }
 
-# shellcheck disable=SC2034
-while read -r oldrev newrev refname; do
+while read -r old_rev new_rev refname; do
   case "$refname" in
       refs/heads/*)
-        if [ "$newrev" = "0000000000000000000000000000000000000000" ]; then
+        if [ "$new_rev" = "0000000000000000000000000000000000000000" ]; then
             echo "Skipping deleted branch"
             continue
         fi
-        clone_repo "$refname"
+        clone_repo "$refname" "$old_rev" "$new_rev"
         ;;
       refs/tags/*)
-        echo "Skipping non-commit tag ref \$refname"
+        echo "Skipping non-commit tag ref $refname"
         ;;
       *)
-        echo "Skipping unknown ref type \$refname"
+        echo "Skipping unknown ref type $refname"
         ;;
     esac
 done

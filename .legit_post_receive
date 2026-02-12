@@ -16,4 +16,10 @@ new_rev=$2
 
 echo "Updated from ${old_rev} to ${new_rev}"
 
-git log "${old_rev}...${new_rev}"
+FIRST_COMMIT=0000000000000000000000000000000000000000
+
+if [[ "${old_rev}" != "$FIRST_COMMIT" ]]; then
+  git log "${old_rev}...${new_rev}"
+else
+  git log
+fi

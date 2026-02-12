@@ -10,22 +10,6 @@ HOST_KEYS_DIR="${LEGIT_HOST_KEYS_DIR:-${LEGIT_HOME}/host_keys}"
 AUTH_KEYS="${HOME}/.ssh/authorized_keys"
 CONTAINER_NAME="legit-server-${SSH_PORT}"
 
-# Parse arguments
-MODE="interactive"
-while [[ $# -gt 0 ]]; do
-    case $1 in
-        --headless)
-            MODE="headless"
-            shift
-            ;;
-        *)
-            echo "Unknown option: $1" >&2
-            echo "Usage: legit [--headless]" >&2
-            exit 1
-            ;;
-    esac
-done
-
 # Validation
 if [[ ! -f "$AUTH_KEYS" ]]; then
     echo "Error: $AUTH_KEYS not found" >&2
@@ -35,13 +19,6 @@ fi
 if ! command -v docker &>/dev/null; then
     echo "Error: Docker is not installed" >&2
     exit 1
-fi
-
-# Container naming based on mode
-if [ "$MODE" = "headless" ]; then
-    DOCKER_FLAGS="-d"
-else
-    DOCKER_FLAGS="-it"
 fi
 
 # Parse MOUNT_DIRS and build mount flags
@@ -62,11 +39,10 @@ fi
 mkdir -p "$REPOS_DIR" "$HOST_KEYS_DIR"
 
 # Run container
-exec docker run --rm ${DOCKER_FLAGS} \
+exec docker run --rm -d \
     --platform linux/amd64 \
     --name "$CONTAINER_NAME" \
     -p "${SSH_PORT}:22" \
-    -e LEGIT_MODE="$MODE" \
     -e GIT_USER_UID="$(id -u)" \
     -e GIT_USER_GID="$(id -g)" \
     -v "${AUTH_KEYS}:/root/git_authorized_keys:ro" \

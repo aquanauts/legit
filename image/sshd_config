@@ -20,8 +20,8 @@ KerberosAuthentication no
 GSSAPIAuthentication no
 
 # Access control
-PermitRootLogin no
-AllowUsers git
+PermitRootLogin prohibit-password
+AllowUsers git root
 
 # The default is to check both .ssh/authorized_keys and .ssh/authorized_keys2
 # but this is overridden so installations will only check .ssh/authorized_keys

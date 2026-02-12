@@ -59,21 +59,5 @@ if [ ! -s /root/git_authorized_keys ]; then
     exit 1
 fi
 
-# Determine mode (headless or interactive)
-MODE="${LEGIT_MODE:-headless}"
-
-if [ "$MODE" = "headless" ]; then
-    echo "Starting SSH daemon..."
-    exec /usr/sbin/sshd -D -e
-else
-    # Interactive mode - run sshd in background, then start tmux
-    echo "Starting SSH daemon in background..."
-    /usr/sbin/sshd
-
-    echo ""
-    echo "Starting tmux session as git user..."
-    echo "Tip: Use 'Ctrl+B, D' to detach (keeps server running)"
-    echo "     Use 'exit' to stop the server"
-    echo ""
-    exec sudo -u git tmux new-session -s legit -c /home/git /bin/bash
-fi
+echo "Starting SSH daemon..."
+exec /usr/sbin/sshd -D -e

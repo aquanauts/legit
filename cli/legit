@@ -63,6 +63,7 @@ mkdir -p "$REPOS_DIR" "$HOST_KEYS_DIR"
 
 # Run container
 exec docker run --rm ${DOCKER_FLAGS} \
+    --platform linux/amd64 \
     --name "$CONTAINER_NAME" \
     -p "${SSH_PORT}:22" \
     -e LEGIT_MODE="$MODE" \

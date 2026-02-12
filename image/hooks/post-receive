@@ -16,10 +16,19 @@ function clone_repo {
 
 # shellcheck disable=SC2034
 while read -r oldrev newrev refname; do
-  if [ "$newrev" = "0000000000000000000000000000000000000000" ]; then
-      echo "Branch deletion detected, skipping"
-      continue
-  fi
-
-  clone_repo "$refname"
+  case "$refname" in
+      refs/heads/*)
+        if [ "$newrev" = "0000000000000000000000000000000000000000" ]; then
+            echo "Skipping deleted branch"
+            continue
+        fi
+        clone_repo "$refname"
+        ;;
+      refs/tags/*)
+        echo "Skipping non-commit tag ref \$refname"
+        ;;
+      *)
+        echo "Skipping unknown ref type \$refname"
+        ;;
+    esac
 done

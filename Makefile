@@ -79,7 +79,7 @@ publish: hooks ## Publish image to registry
 
 .PHONY: run
 run: build ## Build image and run with CLI
-	LEGIT_IMAGE=legit-server:latest ./cli/legit
+	$(MAKE) -C image run
 
 # ============================================================================
 # Cleanup

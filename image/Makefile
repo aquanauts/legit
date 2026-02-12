@@ -79,7 +79,7 @@ docker-daemon-clean: | $(COLIMA) ## Stop and clean Docker daemon
 .PHONY: build
 build: $(DOCKER) $(DOCKER_DAEMON) ## Build the Docker image
 	echo "Building $(IMAGE_NAME):$(DOCKER_TAG)..."
-	$(DOCKER) build -t $(IMAGE_NAME):$(DOCKER_TAG) .
+	$(DOCKER) build --platform linux/amd64 -t $(IMAGE_NAME):$(DOCKER_TAG) .
 	echo "✓ Build complete: $(IMAGE_NAME):$(DOCKER_TAG)"
 
 .PHONY: dev-build
@@ -87,6 +87,14 @@ dev-build: $(DOCKER) $(DOCKER_DAEMON) ## Build without cache for development
 	echo "Building $(IMAGE_NAME):dev (no cache)..."
 	$(DOCKER) build --no-cache -t $(IMAGE_NAME):dev .
 	echo "✓ Development build complete"
+
+# ============================================================================
+# Run Targets
+# ============================================================================
+
+.PHONY: run
+run: build ## Build image and run with CLI
+	LEGIT_IMAGE=legit-server:latest $(CURDIR)/../cli/legit
 
 # ============================================================================
 # Publish Targets
@@ -113,7 +121,4 @@ clean: $(DOCKER) ## Remove build artifacts and tools
 	echo "Cleaning up image build artifacts..."
 	$(DOCKER) rmi $(IMAGE_NAME):$(DOCKER_TAG) 2>/dev/null || true
 	$(DOCKER) rmi $(IMAGE_NAME):dev 2>/dev/null || true
-	$(DOCKER) rm -f legit-server-test 2>/dev/null || true
-	rm -rf test_key test_key.pub test-repo authorized_keys 2>/dev/null || true
-	$(DOCKER) volume rm git-repos 2>/dev/null || true
 	echo "✓ Image cleanup complete"

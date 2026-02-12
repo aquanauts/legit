@@ -23,3 +23,8 @@ if [[ "${old_rev}" != "$FIRST_COMMIT" ]]; then
 else
   git log
 fi
+
+# You can use this script to run commands inside of your repository
+# Here, we can create a bare-bones continuous integration system by running tests
+
+make test

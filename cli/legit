@@ -1,6 +1,22 @@
 #!/bin/bash
 set -euo pipefail
 
+# Parse arguments
+INTERACTIVE=false
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --interactive)
+            INTERACTIVE=true
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1" >&2
+            echo "Usage: $0 [--interactive]" >&2
+            exit 1
+            ;;
+    esac
+done
+
 # Configuration
 IMAGE="${LEGIT_IMAGE:-ghcr.io/aquanauts/legit-server:latest}"
 SSH_PORT="${LEGIT_SSH_PORT:-2222}"
@@ -38,8 +54,11 @@ fi
 # Create required directories
 mkdir -p "$REPOS_DIR" "$HOST_KEYS_DIR"
 
+# Set run mode: interactive (-it) or detached (-d)
+RUN_MODE=$([[ "$INTERACTIVE" == "true" ]] && echo "-it" || echo "-d")
+
 # Run container
-exec docker run --rm -d \
+docker run --rm "$RUN_MODE" \
     --platform linux/amd64 \
     --name "$CONTAINER_NAME" \
     -p "${SSH_PORT}:22" \

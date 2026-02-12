@@ -60,4 +60,20 @@ if [ ! -s /root/git_authorized_keys ]; then
 fi
 
 echo "Starting SSH daemon..."
-exec /usr/sbin/sshd -D -e
+
+# Signal handler for graceful shutdown
+shutdown() {
+    echo "Shutting down SSH daemon..."
+    kill -TERM "$SSHD_PID" 2>/dev/null || true
+    wait "$SSHD_PID" 2>/dev/null || true
+    exit 0
+}
+
+trap shutdown SIGINT SIGTERM
+
+# Start sshd in background so we can handle signals
+/usr/sbin/sshd -D -e &
+SSHD_PID=$!
+
+# Wait for sshd to exit
+wait "$SSHD_PID"

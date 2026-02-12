@@ -94,7 +94,7 @@ dev-build: $(DOCKER) $(DOCKER_DAEMON) ## Build without cache for development
 
 .PHONY: run
 run: build ## Build image and run with CLI
-	LEGIT_IMAGE=legit-server:latest $(CURDIR)/../cli/legit
+	LEGIT_IMAGE=legit-server:latest $(CURDIR)/../cli/legit --interactive
 
 # ============================================================================
 # Publish Targets

@@ -16,15 +16,38 @@ new_rev=$2
 
 echo "Updated from ${old_rev} to ${new_rev}"
 
-FIRST_COMMIT=0000000000000000000000000000000000000000
+## Example 1
+# We can interact with the git repo, inspecting logs, creating commits, and pushing changes up to the local origin
 
-if [[ "${old_rev}" != "$FIRST_COMMIT" ]]; then
-  git log "${old_rev}...${new_rev}"
-else
-  git log
+# FIRST_COMMIT=0000000000000000000000000000000000000000
+#
+# if [[ "${old_rev}" != "$FIRST_COMMIT" ]]; then
+#   git log "${old_rev}...${new_rev}"
+# else
+#   git log
+# fi
+
+
+## Example 2
+# We can use this script to run commands inside of the repository
+# Here, we create a bare-bones continuous integration system by running tests
+
+# make test
+
+
+## Example 3
+# We could run a Claude orchestrator in a tmux session, and ask it to fix bugs in our code
+
+if ! which claude; then
+  echo "Claude not found, installing"
+  curl -fsSL https://claude.ai/install.sh | bash
 fi
 
-# You can use this script to run commands inside of your repository
-# Here, we can create a bare-bones continuous integration system by running tests
+if ! tmux has-session -t claude-orchestrator 2>/dev/null; then
+  # Note: To make this work, you need to mount the .claude directory by setting LEGIT_MOUNT_DIRS, like so:
+  # LEGIT_MOUNT_DIRS=$HOME/.claude legit
+  tmux new-session -d -s claude-orchestrator "claude --dangerously-skip-permissions"
+fi
 
-make test
+tmux send-keys -t claude-orchestrator "Inspect the code in $(pwd) for TODO comments and fix them. Commit each fix one at a time and push it up to the remote origin."
+tmux send-keys -t claude-orchestrator Enter

@@ -6,6 +6,20 @@ RUN apt-get update && \
         openssh-server \
         git \
         ca-certificates \
+        wget \
+        build-essential \
+        tmux \
+        less \
+        procps \
+        fzf \
+        man-db \
+        unzip \
+        gnupg2 \
+        gh \
+        dnsutils \
+        aggregate \
+        jq \
+        vim \
         curl && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*

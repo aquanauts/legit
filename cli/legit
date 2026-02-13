@@ -36,14 +36,14 @@ if ! command -v docker &>/dev/null; then
     exit 1
 fi
 
-# Parse LEGIT_MOUNT_DIRS and build mount flags
-MOUNT_FLAGS=()
+# Parse LEGIT_MOUNT_DIRS and optional args
+OPTIONAL_DOCKER_ARGS=()
 if [ -n "${LEGIT_MOUNT_DIRS:-}" ]; then
     IFS=':' read -ra DIRS <<< "$LEGIT_MOUNT_DIRS"
     for dir in "${DIRS[@]}"; do
         if [ -d "$dir" ]; then
             basename=$(basename "$dir")
-            MOUNT_FLAGS+=("-v" "${dir}:/home/git/${basename}")
+            OPTIONAL_DOCKER_ARGS+=("-v" "${dir}:/home/git/${basename}")
         else
             echo "Warning: $dir does not exist, skipping mount" >&2
         fi
@@ -65,5 +65,5 @@ docker run --rm "$RUN_MODE" \
     -e GIT_USER_GID="$(id -g)" \
     -v "${AUTH_KEYS}:/root/git_authorized_keys:ro" \
     -v "${HOST_KEYS_DIR}:/etc/ssh/ssh_host_keys" \
-    "${MOUNT_FLAGS[@]+"${MOUNT_FLAGS[@]}"}" \
+    "${OPTIONAL_DOCKER_ARGS[@]+"${OPTIONAL_DOCKER_ARGS[@]}"}" \
     "$IMAGE"
